@@ -8,8 +8,14 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
 import 'package:uuid/uuid.dart';
-import 'bridge_generated.io.dart'
-    if (dart.library.html) 'bridge_generated.web.dart';
+
+import 'dart:convert';
+import 'dart:async';
+import 'package:meta/meta.dart';
+import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
+import 'package:uuid/uuid.dart';
+
+import 'dart:ffi' as ffi;
 
 class NativeImpl implements Native {
   final NativePlatform _platform;
@@ -20,35 +26,101 @@ class NativeImpl implements Native {
   factory NativeImpl.wasm(FutureOr<WasmModule> module) =>
       NativeImpl(module as ExternalLibrary);
   NativeImpl.raw(this._platform);
-  Future<Platform> platform({dynamic hint}) {
+  Future<List<BleDevice>> bleDiscover({dynamic hint}) {
     return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) => _platform.inner.wire_platform(port_),
-      parseSuccessData: _wire2api_platform,
-      constMeta: kPlatformConstMeta,
+      callFfi: (port_) => _platform.inner.wire_ble_discover(port_),
+      parseSuccessData: _wire2api_list_ble_device,
+      constMeta: kBleDiscoverConstMeta,
       argValues: [],
       hint: hint,
     ));
   }
 
-  FlutterRustBridgeTaskConstMeta get kPlatformConstMeta =>
+  FlutterRustBridgeTaskConstMeta get kBleDiscoverConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
-        debugName: "platform",
+        debugName: "ble_discover",
         argNames: [],
       );
 
-  Future<bool> rustReleaseMode({dynamic hint}) {
+  Future<void> bleConnect({required String id, dynamic hint}) {
+    var arg0 = _platform.api2wire_String(id);
     return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) => _platform.inner.wire_rust_release_mode(port_),
-      parseSuccessData: _wire2api_bool,
-      constMeta: kRustReleaseModeConstMeta,
+      callFfi: (port_) => _platform.inner.wire_ble_connect(port_, arg0),
+      parseSuccessData: _wire2api_unit,
+      constMeta: kBleConnectConstMeta,
+      argValues: [id],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kBleConnectConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "ble_connect",
+        argNames: ["id"],
+      );
+
+  Future<void> bleDisconnect({required String id, dynamic hint}) {
+    var arg0 = _platform.api2wire_String(id);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_ble_disconnect(port_, arg0),
+      parseSuccessData: _wire2api_unit,
+      constMeta: kBleDisconnectConstMeta,
+      argValues: [id],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kBleDisconnectConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "ble_disconnect",
+        argNames: ["id"],
+      );
+
+  Future<void> init({dynamic hint}) {
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_init(port_),
+      parseSuccessData: _wire2api_unit,
+      constMeta: kInitConstMeta,
       argValues: [],
       hint: hint,
     ));
   }
 
-  FlutterRustBridgeTaskConstMeta get kRustReleaseModeConstMeta =>
+  FlutterRustBridgeTaskConstMeta get kInitConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
-        debugName: "rust_release_mode",
+        debugName: "init",
+        argNames: [],
+      );
+
+  Future<void> logTest({dynamic hint}) {
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_log_test(port_),
+      parseSuccessData: _wire2api_unit,
+      constMeta: kLogTestConstMeta,
+      argValues: [],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kLogTestConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "log_test",
+        argNames: [],
+      );
+
+  Stream<LogEntry> createLogStream({dynamic hint}) {
+    return _platform.executeStream(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_create_log_stream(port_),
+      parseSuccessData: _wire2api_log_entry,
+      constMeta: kCreateLogStreamConstMeta,
+      argValues: [],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kCreateLogStreamConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "create_log_stream",
         argNames: [],
       );
 
@@ -57,19 +129,321 @@ class NativeImpl implements Native {
   }
 // Section: wire2api
 
-  bool _wire2api_bool(dynamic raw) {
-    return raw as bool;
+  String _wire2api_String(dynamic raw) {
+    return raw as String;
   }
 
-  int _wire2api_i32(dynamic raw) {
+  BleDevice _wire2api_ble_device(dynamic raw) {
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return BleDevice(
+      address: _wire2api_String(arr[0]),
+      name: _wire2api_String(arr[1]),
+    );
+  }
+
+  int _wire2api_i64(dynamic raw) {
+    return castInt(raw);
+  }
+
+  List<BleDevice> _wire2api_list_ble_device(dynamic raw) {
+    return (raw as List<dynamic>).map(_wire2api_ble_device).toList();
+  }
+
+  LogEntry _wire2api_log_entry(dynamic raw) {
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return LogEntry(
+      timeMillis: _wire2api_i64(arr[0]),
+      msg: _wire2api_String(arr[1]),
+    );
+  }
+
+  int _wire2api_u8(dynamic raw) {
     return raw as int;
   }
 
-  Platform _wire2api_platform(dynamic raw) {
-    return Platform.values[raw as int];
+  Uint8List _wire2api_uint_8_list(dynamic raw) {
+    return raw as Uint8List;
+  }
+
+  void _wire2api_unit(dynamic raw) {
+    return;
   }
 }
 
 // Section: api2wire
 
+@protected
+int api2wire_u8(int raw) {
+  return raw;
+}
+
 // Section: finalizer
+
+class NativePlatform extends FlutterRustBridgeBase<NativeWire> {
+  NativePlatform(ffi.DynamicLibrary dylib) : super(NativeWire(dylib));
+
+// Section: api2wire
+
+  @protected
+  ffi.Pointer<wire_uint_8_list> api2wire_String(String raw) {
+    return api2wire_uint_8_list(utf8.encoder.convert(raw));
+  }
+
+  @protected
+  ffi.Pointer<wire_uint_8_list> api2wire_uint_8_list(Uint8List raw) {
+    final ans = inner.new_uint_8_list_0(raw.length);
+    ans.ref.ptr.asTypedList(raw.length).setAll(0, raw);
+    return ans;
+  }
+// Section: finalizer
+
+// Section: api_fill_to_wire
+}
+
+// ignore_for_file: camel_case_types, non_constant_identifier_names, avoid_positional_boolean_parameters, annotate_overrides, constant_identifier_names
+
+// AUTO GENERATED FILE, DO NOT EDIT.
+//
+// Generated by `package:ffigen`.
+// ignore_for_file: type=lint
+
+/// generated by flutter_rust_bridge
+class NativeWire implements FlutterRustBridgeWireBase {
+  @internal
+  late final dartApi = DartApiDl(init_frb_dart_api_dl);
+
+  /// Holds the symbol lookup function.
+  final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
+      _lookup;
+
+  /// The symbols are looked up in [dynamicLibrary].
+  NativeWire(ffi.DynamicLibrary dynamicLibrary)
+      : _lookup = dynamicLibrary.lookup;
+
+  /// The symbols are looked up with [lookup].
+  NativeWire.fromLookup(
+      ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
+          lookup)
+      : _lookup = lookup;
+
+  int JNI_OnLoad(
+    int vm,
+    ffi.Pointer<ffi.Void> res,
+  ) {
+    return _JNI_OnLoad(
+      vm,
+      res,
+    );
+  }
+
+  late final _JNI_OnLoadPtr = _lookup<
+          ffi.NativeFunction<ffi.Int Function(ffi.Int, ffi.Pointer<ffi.Void>)>>(
+      'JNI_OnLoad');
+  late final _JNI_OnLoad =
+      _JNI_OnLoadPtr.asFunction<int Function(int, ffi.Pointer<ffi.Void>)>();
+
+  void store_dart_post_cobject(
+    DartPostCObjectFnType ptr,
+  ) {
+    return _store_dart_post_cobject(
+      ptr,
+    );
+  }
+
+  late final _store_dart_post_cobjectPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(DartPostCObjectFnType)>>(
+          'store_dart_post_cobject');
+  late final _store_dart_post_cobject = _store_dart_post_cobjectPtr
+      .asFunction<void Function(DartPostCObjectFnType)>();
+
+  Object get_dart_object(
+    int ptr,
+  ) {
+    return _get_dart_object(
+      ptr,
+    );
+  }
+
+  late final _get_dart_objectPtr =
+      _lookup<ffi.NativeFunction<ffi.Handle Function(ffi.UintPtr)>>(
+          'get_dart_object');
+  late final _get_dart_object =
+      _get_dart_objectPtr.asFunction<Object Function(int)>();
+
+  void drop_dart_object(
+    int ptr,
+  ) {
+    return _drop_dart_object(
+      ptr,
+    );
+  }
+
+  late final _drop_dart_objectPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.UintPtr)>>(
+          'drop_dart_object');
+  late final _drop_dart_object =
+      _drop_dart_objectPtr.asFunction<void Function(int)>();
+
+  int new_dart_opaque(
+    Object handle,
+  ) {
+    return _new_dart_opaque(
+      handle,
+    );
+  }
+
+  late final _new_dart_opaquePtr =
+      _lookup<ffi.NativeFunction<ffi.UintPtr Function(ffi.Handle)>>(
+          'new_dart_opaque');
+  late final _new_dart_opaque =
+      _new_dart_opaquePtr.asFunction<int Function(Object)>();
+
+  int init_frb_dart_api_dl(
+    ffi.Pointer<ffi.Void> obj,
+  ) {
+    return _init_frb_dart_api_dl(
+      obj,
+    );
+  }
+
+  late final _init_frb_dart_api_dlPtr =
+      _lookup<ffi.NativeFunction<ffi.IntPtr Function(ffi.Pointer<ffi.Void>)>>(
+          'init_frb_dart_api_dl');
+  late final _init_frb_dart_api_dl = _init_frb_dart_api_dlPtr
+      .asFunction<int Function(ffi.Pointer<ffi.Void>)>();
+
+  void wire_ble_discover(
+    int port_,
+  ) {
+    return _wire_ble_discover(
+      port_,
+    );
+  }
+
+  late final _wire_ble_discoverPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'wire_ble_discover');
+  late final _wire_ble_discover =
+      _wire_ble_discoverPtr.asFunction<void Function(int)>();
+
+  void wire_ble_connect(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> id,
+  ) {
+    return _wire_ble_connect(
+      port_,
+      id,
+    );
+  }
+
+  late final _wire_ble_connectPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(
+              ffi.Int64, ffi.Pointer<wire_uint_8_list>)>>('wire_ble_connect');
+  late final _wire_ble_connect = _wire_ble_connectPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_ble_disconnect(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> id,
+  ) {
+    return _wire_ble_disconnect(
+      port_,
+      id,
+    );
+  }
+
+  late final _wire_ble_disconnectPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(ffi.Int64,
+              ffi.Pointer<wire_uint_8_list>)>>('wire_ble_disconnect');
+  late final _wire_ble_disconnect = _wire_ble_disconnectPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_init(
+    int port_,
+  ) {
+    return _wire_init(
+      port_,
+    );
+  }
+
+  late final _wire_initPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>('wire_init');
+  late final _wire_init = _wire_initPtr.asFunction<void Function(int)>();
+
+  void wire_log_test(
+    int port_,
+  ) {
+    return _wire_log_test(
+      port_,
+    );
+  }
+
+  late final _wire_log_testPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'wire_log_test');
+  late final _wire_log_test =
+      _wire_log_testPtr.asFunction<void Function(int)>();
+
+  void wire_create_log_stream(
+    int port_,
+  ) {
+    return _wire_create_log_stream(
+      port_,
+    );
+  }
+
+  late final _wire_create_log_streamPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'wire_create_log_stream');
+  late final _wire_create_log_stream =
+      _wire_create_log_streamPtr.asFunction<void Function(int)>();
+
+  ffi.Pointer<wire_uint_8_list> new_uint_8_list_0(
+    int len,
+  ) {
+    return _new_uint_8_list_0(
+      len,
+    );
+  }
+
+  late final _new_uint_8_list_0Ptr = _lookup<
+      ffi.NativeFunction<
+          ffi.Pointer<wire_uint_8_list> Function(
+              ffi.Int32)>>('new_uint_8_list_0');
+  late final _new_uint_8_list_0 = _new_uint_8_list_0Ptr
+      .asFunction<ffi.Pointer<wire_uint_8_list> Function(int)>();
+
+  void free_WireSyncReturn(
+    WireSyncReturn ptr,
+  ) {
+    return _free_WireSyncReturn(
+      ptr,
+    );
+  }
+
+  late final _free_WireSyncReturnPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(WireSyncReturn)>>(
+          'free_WireSyncReturn');
+  late final _free_WireSyncReturn =
+      _free_WireSyncReturnPtr.asFunction<void Function(WireSyncReturn)>();
+}
+
+final class _Dart_Handle extends ffi.Opaque {}
+
+final class wire_uint_8_list extends ffi.Struct {
+  external ffi.Pointer<ffi.Uint8> ptr;
+
+  @ffi.Int32()
+  external int len;
+}
+
+typedef DartPostCObjectFnType = ffi.Pointer<
+    ffi.NativeFunction<
+        ffi.Bool Function(DartPort port_id, ffi.Pointer<ffi.Void> message)>>;
+typedef DartPort = ffi.Int64;

@@ -19,26 +19,75 @@ use std::sync::Arc;
 
 // Section: imports
 
+use crate::ble::BleDevice;
+use crate::logger::LogEntry;
+
 // Section: wire functions
 
-fn wire_platform_impl(port_: MessagePort) {
+fn wire_ble_discover_impl(port_: MessagePort) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
-            debug_name: "platform",
+            debug_name: "ble_discover",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
-        move || move |task_callback| Ok(platform()),
+        move || move |task_callback| Ok(ble_discover()),
     )
 }
-fn wire_rust_release_mode_impl(port_: MessagePort) {
+fn wire_ble_connect_impl(port_: MessagePort, id: impl Wire2Api<String> + UnwindSafe) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
-            debug_name: "rust_release_mode",
+            debug_name: "ble_connect",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
-        move || move |task_callback| Ok(rust_release_mode()),
+        move || {
+            let api_id = id.wire2api();
+            move |task_callback| Ok(ble_connect(api_id))
+        },
+    )
+}
+fn wire_ble_disconnect_impl(port_: MessagePort, id: impl Wire2Api<String> + UnwindSafe) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "ble_disconnect",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_id = id.wire2api();
+            move |task_callback| Ok(ble_disconnect(api_id))
+        },
+    )
+}
+fn wire_init_impl(port_: MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "init",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || move |task_callback| Ok(init()),
+    )
+}
+fn wire_log_test_impl(port_: MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "log_test",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || move |task_callback| Ok(log_test()),
+    )
+}
+fn wire_create_log_stream_impl(port_: MessagePort) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "create_log_stream",
+            port: Some(port_),
+            mode: FfiCallMode::Stream,
+        },
+        move || move |task_callback| Ok(create_log_stream(task_callback.stream_sink())),
     )
 }
 // Section: wrapper structs
@@ -63,36 +112,34 @@ where
         (!self.is_null()).then(|| self.wire2api())
     }
 }
-// Section: impl IntoDart
 
-impl support::IntoDart for Platform {
-    fn into_dart(self) -> support::DartAbi {
-        match self {
-            Self::Unknown => 0,
-            Self::Android => 1,
-            Self::Ios => 2,
-            Self::Windows => 3,
-            Self::Unix => 4,
-            Self::MacIntel => 5,
-            Self::MacApple => 6,
-            Self::Wasm => 7,
-        }
-        .into_dart()
+impl Wire2Api<u8> for u8 {
+    fn wire2api(self) -> u8 {
+        self
     }
 }
-impl support::IntoDartExceptPrimitive for Platform {}
+
+// Section: impl IntoDart
+
+impl support::IntoDart for BleDevice {
+    fn into_dart(self) -> support::DartAbi {
+        vec![self.address.into_dart(), self.name.into_dart()].into_dart()
+    }
+}
+impl support::IntoDartExceptPrimitive for BleDevice {}
+
+impl support::IntoDart for LogEntry {
+    fn into_dart(self) -> support::DartAbi {
+        vec![self.time_millis.into_dart(), self.msg.into_dart()].into_dart()
+    }
+}
+impl support::IntoDartExceptPrimitive for LogEntry {}
+
 // Section: executor
 
 support::lazy_static! {
     pub static ref FLUTTER_RUST_BRIDGE_HANDLER: support::DefaultHandler = Default::default();
 }
-
-/// cbindgen:ignore
-#[cfg(target_family = "wasm")]
-#[path = "bridge_generated.web.rs"]
-mod web;
-#[cfg(target_family = "wasm")]
-pub use web::*;
 
 #[cfg(not(target_family = "wasm"))]
 #[path = "bridge_generated.io.rs"]

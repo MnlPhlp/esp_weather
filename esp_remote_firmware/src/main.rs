@@ -1,3 +1,5 @@
+mod ble;
+
 use esp_idf_sys as _; // If using the `binstart` feature of `esp-idf-sys`, always keep this module imported
 use log::*;
 
@@ -9,4 +11,7 @@ fn main() {
     esp_idf_svc::log::EspLogger::initialize_default();
 
     info!("Hello, world!");
+
+    // setup ble and start advertising
+    ble::setup().expect("unable to setup ble");
 }
