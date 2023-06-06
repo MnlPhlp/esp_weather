@@ -1,16 +1,17 @@
 use anyhow::Result;
 use btleplug::api::{Central, Manager as _, Peripheral as _, ScanFilter};
-use btleplug::platform::{Adapter, Manager};
+use btleplug::platform::{Adapter, Manager, Peripheral};
+use flutter_rust_bridge::StreamSink;
 use std::collections::HashMap;
 use std::time::Duration;
 use tokio::time::sleep;
 
 use crate::logger::log;
 
-use super::{BleDevice, Error, Peripheral};
+use super::{BleDevice, Error};
 
 pub struct BleHandler {
-    connected: Option<BleDevice>,
+    connected: Option<Peripheral>,
     devices: HashMap<String, Peripheral>,
     adapter: Adapter,
 }
@@ -33,42 +34,56 @@ impl BleHandler {
             .devices
             .get(&address)
             .ok_or(Error::UnknownPeripheral(address))?;
-        device.connect().await;
-        self.connected = Some(BleDevice::from_peripheral(device).await);
+        device.connect().await?;
+        self.connected = Some(device.clone());
         Ok(())
     }
 
     pub async fn disconnect(&mut self) -> Result<()> {
         log("disconnecting");
         if let Some(dev) = self.connected.as_mut() {
-            let device = self
-                .devices
-                .get(&dev.address)
-                .ok_or(Error::UnknownPeripheral(dev.address.clone()))?;
-            device.disconnect().await?;
+            dev.disconnect().await?;
         }
         Ok(())
     }
 
     /// Scans for [timeout] milliseconds and returns vector with all discovered devices
-    pub async fn discover(&self, timeout: u64) -> Result<Vec<BleDevice>> {
+    pub async fn discover(&mut self, sink: StreamSink<Vec<BleDevice>>, timeout: u64) -> Result<()> {
         log("Starting discovery");
         self.adapter.start_scan(ScanFilter::default()).await?;
-        log("scan started");
-        sleep(Duration::from_millis(timeout)).await;
-        log("sleep done");
-        let discovered = self.adapter.peripherals().await?;
-        log(format!("discovered {} devices", discovered.len()));
-        self.adapter.stop_scan().await?;
-        log("scan stopped");
-        let mut devices = vec![];
-        for dev in discovered {
-            let props = dev.properties().await?.unwrap();
-            devices.push(BleDevice {
-                address: props.address.to_string(),
-                name: props.local_name.unwrap_or("unknwon".into()),
-            });
+        self.devices.clear();
+        let loops = timeout / 500;
+        for _ in 0..loops {
+            sleep(Duration::from_millis(500)).await;
+            let discovered = self.adapter.peripherals().await?;
+
+            let devices = self.add_devices(discovered).await;
+            if devices.len() > 0 {
+                sink.add(devices);
+            }
         }
-        return Ok(devices);
+        self.adapter.stop_scan().await?;
+        log(format!("discovered {} devices", self.devices.len()));
+        log("scan stopped");
+        return Ok(());
+    }
+
+    async fn add_devices(&mut self, discovered: Vec<Peripheral>) -> Vec<BleDevice> {
+        let mut devices = vec![];
+        for p in discovered {
+            if let Ok(dev) = BleDevice::from_peripheral(&p).await {
+                self.devices.insert(dev.address.clone(), p);
+                devices.push(dev);
+            }
+        }
+        devices.sort();
+        return devices;
+    }
+
+    pub async fn send_data(&mut self, data: Vec<u8>) -> Result<()> {
+        if let Some(dev) = self.connected.as_mut() {
+            // dev.write(, , )
+        }
+        Ok(())
     }
 }

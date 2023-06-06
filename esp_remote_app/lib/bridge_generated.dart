@@ -26,9 +26,9 @@ class NativeImpl implements Native {
   factory NativeImpl.wasm(FutureOr<WasmModule> module) =>
       NativeImpl(module as ExternalLibrary);
   NativeImpl.raw(this._platform);
-  Future<List<BleDevice>> bleDiscover({required int timeout, dynamic hint}) {
+  Stream<List<BleDevice>> bleDiscover({required int timeout, dynamic hint}) {
     var arg0 = _platform.api2wire_u64(timeout);
-    return _platform.executeNormal(FlutterRustBridgeTask(
+    return _platform.executeStream(FlutterRustBridgeTask(
       callFfi: (port_) => _platform.inner.wire_ble_discover(port_, arg0),
       parseSuccessData: _wire2api_list_ble_device,
       constMeta: kBleDiscoverConstMeta,
@@ -75,6 +75,23 @@ class NativeImpl implements Native {
       const FlutterRustBridgeTaskConstMeta(
         debugName: "ble_disconnect",
         argNames: ["id"],
+      );
+
+  Future<void> bleSend({required Uint8List data, dynamic hint}) {
+    var arg0 = _platform.api2wire_uint_8_list(data);
+    return _platform.executeNormal(FlutterRustBridgeTask(
+      callFfi: (port_) => _platform.inner.wire_ble_send(port_, arg0),
+      parseSuccessData: _wire2api_unit,
+      constMeta: kBleSendConstMeta,
+      argValues: [data],
+      hint: hint,
+    ));
+  }
+
+  FlutterRustBridgeTaskConstMeta get kBleSendConstMeta =>
+      const FlutterRustBridgeTaskConstMeta(
+        debugName: "ble_send",
+        argNames: ["data"],
       );
 
   Future<void> init({dynamic hint}) {
@@ -370,6 +387,23 @@ class NativeWire implements FlutterRustBridgeWireBase {
           ffi.Void Function(ffi.Int64,
               ffi.Pointer<wire_uint_8_list>)>>('wire_ble_disconnect');
   late final _wire_ble_disconnect = _wire_ble_disconnectPtr
+      .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
+
+  void wire_ble_send(
+    int port_,
+    ffi.Pointer<wire_uint_8_list> data,
+  ) {
+    return _wire_ble_send(
+      port_,
+      data,
+    );
+  }
+
+  late final _wire_ble_sendPtr = _lookup<
+      ffi.NativeFunction<
+          ffi.Void Function(
+              ffi.Int64, ffi.Pointer<wire_uint_8_list>)>>('wire_ble_send');
+  late final _wire_ble_send = _wire_ble_sendPtr
       .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
 
   void wire_init(

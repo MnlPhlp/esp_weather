@@ -9,8 +9,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge.dart';
 import 'package:uuid/uuid.dart';
 
 abstract class Native {
-  /// Scans for [timeout] milliseconds and returns vector with all discovered devices
-  Future<List<BleDevice>> bleDiscover({required int timeout, dynamic hint});
+  Stream<List<BleDevice>> bleDiscover({required int timeout, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kBleDiscoverConstMeta;
 
@@ -21,6 +20,10 @@ abstract class Native {
   Future<void> bleDisconnect({required String id, dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kBleDisconnectConstMeta;
+
+  Future<void> bleSend({required Uint8List data, dynamic hint});
+
+  FlutterRustBridgeTaskConstMeta get kBleSendConstMeta;
 
   Future<void> init({dynamic hint});
 

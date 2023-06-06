@@ -6,33 +6,29 @@ use anyhow::Result;
 use flutter_rust_bridge::StreamSink;
 
 use crate::ble;
+use crate::ble::BleDevice;
 use crate::logger;
 use crate::logger::log;
 
-/// Scans for [timeout] milliseconds and returns vector with all discovered devices
-pub fn ble_discover(timeout: u64) -> Vec<ble::BleDevice> {
-    log("ble_discover");
-    match ble::block_on(ble::discover(timeout)) {
-        Ok(devices) => return devices,
-        Err(e) => {
-            log(format!("Error during discovering: {e}"));
-            return vec![];
-        }
-    }
+pub fn ble_discover(sink: StreamSink<Vec<BleDevice>>, timeout: u64) {
+    ble::discover(sink, timeout).unwrap();
 }
 
 pub fn ble_connect(id: String) {
-    ble::block_on(ble::connect(id)).unwrap()
+    ble::connect(id).unwrap()
 }
 
 pub fn ble_disconnect(id: String) {
-    ble::block_on(ble::disconnect()).unwrap()
+    ble::disconnect().unwrap()
 }
 
-#[tokio::main]
-pub async fn init() {
+pub fn ble_send(data: Vec<u8>) {
+    ble::send_data(data).unwrap()
+}
+
+pub fn init() {
     log("starting init");
-    match ble::init().await {
+    match ble::init() {
         Ok(_) => log("init done"),
         Err(e) => log(format!("Error while running init: {e}")),
     }

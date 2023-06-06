@@ -77,7 +77,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 5), () => async_init());
+    async_init();
   }
 
   void async_init() async {
@@ -111,21 +111,25 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           TextButton(
             child: Text("test discover"),
-            onPressed: () async {
-              final devices = await api.bleDiscover(timeout: 100);
-              setState(() {
-                bleDevices = devices;
-              });
+            onPressed: () {
+              api.bleDiscover(timeout: 5000).listen((devices) => setState(() {
+                    bleDevices = devices;
+                  }));
             },
           ),
           Expanded(
             child: ListView.builder(
               itemCount: bleDevices.length,
               itemBuilder: (ctx, idx) => SizedBox(
-                  width: 100,
-                  height: 20,
-                  child: Text(
-                      "${bleDevices[idx].name} (${bleDevices[idx].address})")),
+                width: 100,
+                height: 20,
+                child: TextButton(
+                    onPressed: () async {
+                      await api.bleConnect(id: bleDevices[idx].address);
+                    },
+                    child: Text(
+                        "${bleDevices[idx].name} (${bleDevices[idx].address})")),
+              ),
             ),
           ),
         ],

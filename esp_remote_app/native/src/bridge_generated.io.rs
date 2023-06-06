@@ -17,6 +17,11 @@ pub extern "C" fn wire_ble_disconnect(port_: i64, id: *mut wire_uint_8_list) {
 }
 
 #[no_mangle]
+pub extern "C" fn wire_ble_send(port_: i64, data: *mut wire_uint_8_list) {
+    wire_ble_send_impl(port_, data)
+}
+
+#[no_mangle]
 pub extern "C" fn wire_init(port_: i64) {
     wire_init_impl(port_)
 }

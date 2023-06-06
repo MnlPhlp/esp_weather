@@ -29,11 +29,11 @@ fn wire_ble_discover_impl(port_: MessagePort, timeout: impl Wire2Api<u64> + Unwi
         WrapInfo {
             debug_name: "ble_discover",
             port: Some(port_),
-            mode: FfiCallMode::Normal,
+            mode: FfiCallMode::Stream,
         },
         move || {
             let api_timeout = timeout.wire2api();
-            move |task_callback| Ok(ble_discover(api_timeout))
+            move |task_callback| Ok(ble_discover(task_callback.stream_sink(), api_timeout))
         },
     )
 }
@@ -60,6 +60,19 @@ fn wire_ble_disconnect_impl(port_: MessagePort, id: impl Wire2Api<String> + Unwi
         move || {
             let api_id = id.wire2api();
             move |task_callback| Ok(ble_disconnect(api_id))
+        },
+    )
+}
+fn wire_ble_send_impl(port_: MessagePort, data: impl Wire2Api<Vec<u8>> + UnwindSafe) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap(
+        WrapInfo {
+            debug_name: "ble_send",
+            port: Some(port_),
+            mode: FfiCallMode::Normal,
+        },
+        move || {
+            let api_data = data.wire2api();
+            move |task_callback| Ok(ble_send(api_data))
         },
     )
 }
