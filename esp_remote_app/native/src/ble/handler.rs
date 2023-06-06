@@ -1,17 +1,25 @@
 use anyhow::Result;
-use btleplug::api::{Central, Manager as _, Peripheral as _, ScanFilter};
+use btleplug::api::{
+    Central, Characteristic, Manager as _, Peripheral as _, ScanFilter, WriteType,
+};
 use btleplug::platform::{Adapter, Manager, Peripheral};
 use flutter_rust_bridge::StreamSink;
 use std::collections::HashMap;
 use std::time::Duration;
 use tokio::time::sleep;
+use uuid::Uuid;
 
-use crate::logger::log;
+use esp_remote_common;
 
 use super::{BleDevice, Error};
+use crate::logger::log;
+
+const SERVICE_UUID: Uuid = Uuid::from_u128_le(esp_remote_common::SERVICE_UUID);
+const CMD_UUID: Uuid = Uuid::from_u128_le(esp_remote_common::CMD_UUID);
 
 pub struct BleHandler {
     connected: Option<Peripheral>,
+    cmd_charac: Option<Characteristic>,
     devices: HashMap<String, Peripheral>,
     adapter: Adapter,
 }
@@ -24,6 +32,7 @@ impl BleHandler {
         Ok(Self {
             devices: HashMap::new(),
             connected: None,
+            cmd_charac: None,
             adapter: central,
         })
     }
@@ -34,7 +43,18 @@ impl BleHandler {
             .devices
             .get(&address)
             .ok_or(Error::UnknownPeripheral(address))?;
+        // discover service and characteristics needed
+        // return with error if something is not found
         device.connect().await?;
+        device.discover_services().await?;
+        let services = device.services();
+        log(format!("Services: {:?}", services));
+        let service = services
+            .iter()
+            .find(|s| s.uuid == SERVICE_UUID)
+            .ok_or(Error::ServiceNotFound)?;
+        log(format!("Characteristics: {:?}", service.characteristics));
+        self.cmd_charac = find_charac(service, CMD_UUID)?;
         self.connected = Some(device.clone());
         Ok(())
     }
@@ -56,7 +76,7 @@ impl BleHandler {
         for _ in 0..loops {
             sleep(Duration::from_millis(500)).await;
             let discovered = self.adapter.peripherals().await?;
-
+            log(format!("discovered.len() => {}", discovered.len()));
             let devices = self.add_devices(discovered).await;
             if devices.len() > 0 {
                 sink.add(devices);
@@ -82,8 +102,18 @@ impl BleHandler {
 
     pub async fn send_data(&mut self, data: Vec<u8>) -> Result<()> {
         if let Some(dev) = self.connected.as_mut() {
-            // dev.write(, , )
+            if let Some(cmd_charac) = &self.cmd_charac {
+                dev.write(cmd_charac, &data, WriteType::WithoutResponse)
+                    .await?;
+            }
         }
         Ok(())
+    }
+}
+
+fn find_charac(service: &btleplug::api::Service, uuid: Uuid) -> Result<Option<Characteristic>> {
+    match service.characteristics.iter().find(|c| c.uuid == uuid) {
+        Some(c) => Ok(Some(c.clone())),
+        None => Err(Error::CMDNotFound.into()),
     }
 }

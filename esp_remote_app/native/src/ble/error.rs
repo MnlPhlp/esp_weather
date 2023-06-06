@@ -32,6 +32,9 @@ pub enum Error {
     #[error("There is no peripheral with id: {0}")]
     UnknownPeripheral(String),
 
-    #[error("Handler not initialized")]
-    HandlerNotInitialized,
+    #[error("CMD Characteristic not found")]
+    CMDNotFound,
+
+    #[error("Service not found")]
+    ServiceNotFound,
 }

@@ -16,6 +16,8 @@ pub use error::Error;
 mod handler;
 pub use handler::*;
 
+use crate::logger::log;
+
 static TX: OnceCell<UnboundedSender<Command>> = OnceCell::new();
 
 enum Command {
@@ -52,13 +54,13 @@ pub fn init() -> Result<()> {
     rt.spawn(async move {
         let mut handler = BleHandler::new().await.unwrap();
         while let Some(msg) = rx.recv().await {
-            match msg {
-                Command::Connect { id } => handler.connect(id).await.unwrap(),
-                Command::Disconnect => handler.disconnect().await.unwrap(),
-                Command::Discover { sink, timeout } => {
-                    handler.discover(sink, timeout).await.unwrap()
-                }
-                Command::SendData(data) => handler.send_data(data).await.unwrap(),
+            if let Err(e) = match msg {
+                Command::Connect { id } => handler.connect(id).await,
+                Command::Disconnect => handler.disconnect().await,
+                Command::Discover { sink, timeout } => handler.discover(sink, timeout).await,
+                Command::SendData(data) => handler.send_data(data).await,
+            } {
+                log(format!("Error while executing command: {e}"));
             }
         }
     });
