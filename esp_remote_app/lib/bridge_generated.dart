@@ -26,12 +26,13 @@ class NativeImpl implements Native {
   factory NativeImpl.wasm(FutureOr<WasmModule> module) =>
       NativeImpl(module as ExternalLibrary);
   NativeImpl.raw(this._platform);
-  Future<List<BleDevice>> bleDiscover({dynamic hint}) {
+  Future<List<BleDevice>> bleDiscover({required int timeout, dynamic hint}) {
+    var arg0 = _platform.api2wire_u64(timeout);
     return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) => _platform.inner.wire_ble_discover(port_),
+      callFfi: (port_) => _platform.inner.wire_ble_discover(port_, arg0),
       parseSuccessData: _wire2api_list_ble_device,
       constMeta: kBleDiscoverConstMeta,
-      argValues: [],
+      argValues: [timeout],
       hint: hint,
     ));
   }
@@ -39,7 +40,7 @@ class NativeImpl implements Native {
   FlutterRustBridgeTaskConstMeta get kBleDiscoverConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
         debugName: "ble_discover",
-        argNames: [],
+        argNames: ["timeout"],
       );
 
   Future<void> bleConnect({required String id, dynamic hint}) {
@@ -194,6 +195,11 @@ class NativePlatform extends FlutterRustBridgeBase<NativeWire> {
   }
 
   @protected
+  int api2wire_u64(int raw) {
+    return raw;
+  }
+
+  @protected
   ffi.Pointer<wire_uint_8_list> api2wire_uint_8_list(Uint8List raw) {
     final ans = inner.new_uint_8_list_0(raw.length);
     ans.ref.ptr.asTypedList(raw.length).setAll(0, raw);
@@ -318,17 +324,19 @@ class NativeWire implements FlutterRustBridgeWireBase {
 
   void wire_ble_discover(
     int port_,
+    int timeout,
   ) {
     return _wire_ble_discover(
       port_,
+      timeout,
     );
   }
 
   late final _wire_ble_discoverPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64, ffi.Uint64)>>(
           'wire_ble_discover');
   late final _wire_ble_discover =
-      _wire_ble_discoverPtr.asFunction<void Function(int)>();
+      _wire_ble_discoverPtr.asFunction<void Function(int, int)>();
 
   void wire_ble_connect(
     int port_,

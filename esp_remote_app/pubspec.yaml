@@ -37,6 +37,8 @@ dependencies:
   ffi: ^2.0.1
   flutter_rust_bridge: ^1.45.0
   meta: ^1.8.0
+  permission_handler: ^10.2.0
+  bluetooth_enable_fork: ^0.1.6
 
 dev_dependencies:
   flutter_test:

@@ -2,35 +2,40 @@
 // When adding new code to your project, note that only items used
 // here will be transformed to their Dart equivalents.
 
+use anyhow::Result;
 use flutter_rust_bridge::StreamSink;
-use futures::executor::block_on;
 
 use crate::ble;
 use crate::logger;
 use crate::logger::log;
 
-pub fn ble_discover() -> Vec<ble::BleDevice> {
+/// Scans for [timeout] milliseconds and returns vector with all discovered devices
+pub fn ble_discover(timeout: u64) -> Vec<ble::BleDevice> {
     log("ble_discover");
-    return block_on(ble::discover()).unwrap();
-}
-
-pub fn ble_stream_discover(s: StreamSink<Vec<ble::BleDevice>>, filter: Vec<String>) {
-    log("ble_stream_discover");
-    ble::stream_discover(s, filter);
+    match ble::block_on(ble::discover(timeout)) {
+        Ok(devices) => return devices,
+        Err(e) => {
+            log(format!("Error during discovering: {e}"));
+            return vec![];
+        }
+    }
 }
 
 pub fn ble_connect(id: String) {
-    ble::connect(id).unwrap();
+    ble::block_on(ble::connect(id)).unwrap()
 }
 
 pub fn ble_disconnect(id: String) {
-    ble::disconnect(id).unwrap();
+    ble::block_on(ble::disconnect()).unwrap()
 }
 
-pub fn init() {
+#[tokio::main]
+pub async fn init() {
     log("starting init");
-    ble::init().unwrap();
-    log("init done");
+    match ble::init().await {
+        Ok(_) => log("init done"),
+        Err(e) => log(format!("Error while running init: {e}")),
+    }
 }
 
 pub fn log_test() {

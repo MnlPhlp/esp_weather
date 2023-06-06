@@ -2,8 +2,8 @@ use super::*;
 // Section: wire functions
 
 #[no_mangle]
-pub extern "C" fn wire_ble_discover(port_: i64) {
-    wire_ble_discover_impl(port_)
+pub extern "C" fn wire_ble_discover(port_: i64, timeout: u64) {
+    wire_ble_discover_impl(port_, timeout)
 }
 
 #[no_mangle]

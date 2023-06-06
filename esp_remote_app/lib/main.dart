@@ -1,5 +1,26 @@
+import 'package:bluetooth_enable_fork/bluetooth_enable_fork.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'ffi.dart' if (dart.library.html) 'ffi_web.dart';
+
+Future<void> checkPerm() async {
+  var permissions = [
+    Permission.bluetoothScan,
+    Permission.bluetoothConnect,
+  ];
+  for (var perm in permissions) {
+    if (await perm.isDenied) {
+      await perm.request();
+    }
+    if (await perm.status.isPermanentlyDenied) {
+      await openAppSettings();
+    }
+  }
+  var enabled = await BluetoothEnable.enableBluetooth;
+  if (enabled == "false") {
+    print("enable bluetooth first");
+  }
+}
 
 void main() async {
   runApp(const MyApp());
@@ -51,18 +72,17 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   // These futures belong to the state and are only initialized once,
   // in the initState method.
-  Future<List<BleDevice>>? bleDevices;
+  List<BleDevice> bleDevices = [];
 
   @override
   void initState() {
     super.initState();
-    // async_init();
+    Future.delayed(const Duration(seconds: 5), () => async_init());
   }
 
   void async_init() async {
-    api
-        .createLogStream()
-        .listen((log) => print("rust-log ${log.timeMillis}: ${log.msg}"));
+    api.createLogStream().listen((log) => print(
+        "rust-log ${Duration(milliseconds: log.timeMillis)}: ${log.msg}"));
     await api.init();
   }
 
@@ -86,34 +106,27 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: () => api.logTest(),
           ),
           TextButton(
-            child: Text("test discover"),
-            onPressed: () => setState(() {
-              bleDevices = api.bleDiscover();
-            }),
+            child: Text("check permissions"),
+            onPressed: () => checkPerm(),
           ),
           TextButton(
-            child: Text("run init"),
-            onPressed: () => async_init(),
-          ),
-          FutureBuilder(
-            future: bleDevices,
-            builder: (ctx, snapshot) {
-              if (!snapshot.hasData) {
-                return SizedBox(
-                    width: 50, height: 50, child: CircularProgressIndicator());
-              }
-              final devices = snapshot.data!;
-              return Expanded(
-                child: ListView.builder(
-                  itemCount: devices.length,
-                  itemBuilder: (ctx, idx) => SizedBox(
-                      width: 100,
-                      height: 20,
-                      child: Text(
-                          "${devices[idx].name} (${devices[idx].address})")),
-                ),
-              );
+            child: Text("test discover"),
+            onPressed: () async {
+              final devices = await api.bleDiscover(timeout: 100);
+              setState(() {
+                bleDevices = devices;
+              });
             },
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: bleDevices.length,
+              itemBuilder: (ctx, idx) => SizedBox(
+                  width: 100,
+                  height: 20,
+                  child: Text(
+                      "${bleDevices[idx].name} (${bleDevices[idx].address})")),
+            ),
           ),
         ],
       ),

@@ -24,14 +24,17 @@ use crate::logger::LogEntry;
 
 // Section: wire functions
 
-fn wire_ble_discover_impl(port_: MessagePort) {
+fn wire_ble_discover_impl(port_: MessagePort, timeout: impl Wire2Api<u64> + UnwindSafe) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
             debug_name: "ble_discover",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
-        move || move |task_callback| Ok(ble_discover()),
+        move || {
+            let api_timeout = timeout.wire2api();
+            move |task_callback| Ok(ble_discover(api_timeout))
+        },
     )
 }
 fn wire_ble_connect_impl(port_: MessagePort, id: impl Wire2Api<String> + UnwindSafe) {
@@ -113,6 +116,11 @@ where
     }
 }
 
+impl Wire2Api<u64> for u64 {
+    fn wire2api(self) -> u64 {
+        self
+    }
+}
 impl Wire2Api<u8> for u8 {
     fn wire2api(self) -> u8 {
         self
