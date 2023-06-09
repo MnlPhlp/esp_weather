@@ -3,19 +3,15 @@ use btleplug::api::{
     Central, Characteristic, Manager as _, Peripheral as _, ScanFilter, WriteType,
 };
 use btleplug::platform::{Adapter, Manager, Peripheral};
+use esp_remote_common::{CMD_UUID, SERVICE_UUID};
 use flutter_rust_bridge::StreamSink;
 use std::collections::HashMap;
 use std::time::Duration;
 use tokio::time::sleep;
-use uuid::Uuid;
-
-use esp_remote_common;
+use uuid::{uuid, Uuid};
 
 use super::{BleDevice, Error};
 use crate::logger::log;
-
-const SERVICE_UUID: Uuid = Uuid::from_u128_le(esp_remote_common::SERVICE_UUID);
-const CMD_UUID: Uuid = Uuid::from_u128_le(esp_remote_common::CMD_UUID);
 
 pub struct BleHandler {
     connected: Option<Peripheral>,
