@@ -124,16 +124,12 @@ class _MyHomePageState extends State<MyHomePage> {
           Expanded(
             child: ListView.builder(
               itemCount: bleDevices.length,
-              itemBuilder: (ctx, idx) => SizedBox(
-                width: 100,
-                height: 20,
-                child: TextButton(
-                    onPressed: () async {
-                      await api.bleConnect(id: bleDevices[idx].address);
-                    },
-                    child: Text(
-                        "${bleDevices[idx].name} (${bleDevices[idx].address})")),
-              ),
+              itemBuilder: (ctx, idx) => TextButton(
+                  onPressed: () async {
+                    await api.bleConnect(id: bleDevices[idx].address);
+                  },
+                  child: Text(
+                      "${bleDevices[idx].name} (${bleDevices[idx].address})")),
             ),
           ),
         ],

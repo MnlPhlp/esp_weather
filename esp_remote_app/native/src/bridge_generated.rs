@@ -50,17 +50,14 @@ fn wire_ble_connect_impl(port_: MessagePort, id: impl Wire2Api<String> + UnwindS
         },
     )
 }
-fn wire_ble_disconnect_impl(port_: MessagePort, id: impl Wire2Api<String> + UnwindSafe) {
+fn wire_ble_disconnect_impl(port_: MessagePort) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap(
         WrapInfo {
             debug_name: "ble_disconnect",
             port: Some(port_),
             mode: FfiCallMode::Normal,
         },
-        move || {
-            let api_id = id.wire2api();
-            move |task_callback| Ok(ble_disconnect(api_id))
-        },
+        move || move |task_callback| Ok(ble_disconnect()),
     )
 }
 fn wire_ble_send_impl(port_: MessagePort, data: impl Wire2Api<Vec<u8>> + UnwindSafe) {

@@ -2,7 +2,6 @@
 // When adding new code to your project, note that only items used
 // here will be transformed to their Dart equivalents.
 
-use anyhow::Result;
 use flutter_rust_bridge::StreamSink;
 
 use crate::ble;
@@ -18,7 +17,7 @@ pub fn ble_connect(id: String) {
     ble::connect(id).unwrap()
 }
 
-pub fn ble_disconnect(id: String) {
+pub fn ble_disconnect() {
     ble::disconnect().unwrap()
 }
 

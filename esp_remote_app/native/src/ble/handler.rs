@@ -8,7 +8,7 @@ use flutter_rust_bridge::StreamSink;
 use std::collections::HashMap;
 use std::time::Duration;
 use tokio::time::sleep;
-use uuid::{uuid, Uuid};
+use uuid::Uuid;
 
 use super::{BleDevice, Error};
 use crate::logger::log;

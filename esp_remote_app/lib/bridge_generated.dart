@@ -60,13 +60,12 @@ class NativeImpl implements Native {
         argNames: ["id"],
       );
 
-  Future<void> bleDisconnect({required String id, dynamic hint}) {
-    var arg0 = _platform.api2wire_String(id);
+  Future<void> bleDisconnect({dynamic hint}) {
     return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) => _platform.inner.wire_ble_disconnect(port_, arg0),
+      callFfi: (port_) => _platform.inner.wire_ble_disconnect(port_),
       parseSuccessData: _wire2api_unit,
       constMeta: kBleDisconnectConstMeta,
-      argValues: [id],
+      argValues: [],
       hint: hint,
     ));
   }
@@ -74,7 +73,7 @@ class NativeImpl implements Native {
   FlutterRustBridgeTaskConstMeta get kBleDisconnectConstMeta =>
       const FlutterRustBridgeTaskConstMeta(
         debugName: "ble_disconnect",
-        argNames: ["id"],
+        argNames: [],
       );
 
   Future<void> bleSend({required Uint8List data, dynamic hint}) {
@@ -374,20 +373,17 @@ class NativeWire implements FlutterRustBridgeWireBase {
 
   void wire_ble_disconnect(
     int port_,
-    ffi.Pointer<wire_uint_8_list> id,
   ) {
     return _wire_ble_disconnect(
       port_,
-      id,
     );
   }
 
-  late final _wire_ble_disconnectPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Void Function(ffi.Int64,
-              ffi.Pointer<wire_uint_8_list>)>>('wire_ble_disconnect');
-  late final _wire_ble_disconnect = _wire_ble_disconnectPtr
-      .asFunction<void Function(int, ffi.Pointer<wire_uint_8_list>)>();
+  late final _wire_ble_disconnectPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
+          'wire_ble_disconnect');
+  late final _wire_ble_disconnect =
+      _wire_ble_disconnectPtr.asFunction<void Function(int)>();
 
   void wire_ble_send(
     int port_,

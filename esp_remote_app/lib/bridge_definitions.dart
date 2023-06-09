@@ -17,7 +17,7 @@ abstract class Native {
 
   FlutterRustBridgeTaskConstMeta get kBleConnectConstMeta;
 
-  Future<void> bleDisconnect({required String id, dynamic hint});
+  Future<void> bleDisconnect({dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kBleDisconnectConstMeta;
 

@@ -1,10 +1,7 @@
 // taken from https://github.com/trobanga/flutter_btleplug/blob/b092ef415b36e60f4bb6df0ca261efdedaaa4a7e/packages/btleplug/native/src/ble.rsuse std::collections::HashMap;
 
 use anyhow::Result;
-use btleplug::{
-    api::Peripheral as _,
-    platform::{Peripheral, PeripheralId},
-};
+use btleplug::{api::Peripheral as _, platform::Peripheral};
 use flutter_rust_bridge::StreamSink;
 use once_cell::sync::OnceCell;
 use tokio::sync::mpsc::{self, UnboundedSender};
