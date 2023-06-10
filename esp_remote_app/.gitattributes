@@ -1,2 +1,7 @@
-android/jni-utils/** linguist-vendored
-android/droidplug/** linguist-vendored
+android/** linguist-vendored
+linux/** linguist-vendored
+windows/** linguist-vendored
+native/src/bridge_generated* linguist-vendored
+lib/bridge_generated* linguist-vendored
+lib/bridge_definitions* linguist-vendored
+lib/ffi* linguist-vendored
