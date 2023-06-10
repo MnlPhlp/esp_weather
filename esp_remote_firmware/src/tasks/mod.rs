@@ -5,7 +5,6 @@ use embassy_time::{Duration, Instant, Timer};
 
 use anyhow::{Error, Result};
 use esp_idf_hal::{
-    gpio::PinDriver,
     prelude::Peripherals,
     task::executor::{EspExecutor, Local},
 };

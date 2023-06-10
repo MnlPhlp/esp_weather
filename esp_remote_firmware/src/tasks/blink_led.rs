@@ -1,9 +1,6 @@
-use anyhow::{Error, Result};
+use anyhow::Result;
 use embassy_time::{Duration, Instant};
-use esp_idf_hal::{
-    gpio::{OutputPin, PinDriver},
-    prelude::Peripherals,
-};
+use esp_idf_hal::gpio::{OutputPin, PinDriver};
 
 use crate::state::BLUETOOTH_CONNECTED;
 

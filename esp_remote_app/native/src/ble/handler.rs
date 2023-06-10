@@ -99,7 +99,7 @@ impl BleHandler {
     pub async fn send_data(&mut self, data: Vec<u8>) -> Result<()> {
         if let Some(dev) = self.connected.as_mut() {
             if let Some(cmd_charac) = &self.cmd_charac {
-                dev.write(cmd_charac, &data, WriteType::WithoutResponse)
+                dev.write(cmd_charac, &data, WriteType::WithResponse)
                     .await?;
             }
         }
