@@ -2,7 +2,7 @@ use anyhow::Result;
 use embassy_time::{Duration, Instant};
 use esp_idf_hal::gpio::{OutputPin, PinDriver};
 
-use crate::state::BLUETOOTH_CONNECTED;
+use crate::STATE;
 
 use super::delay_task;
 
@@ -10,7 +10,7 @@ pub async fn task_blink_led(delay: Duration, led_pin: impl OutputPin) -> Result<
     let mut led = PinDriver::output(led_pin)?;
     loop {
         let start = Instant::now();
-        let connected = BLUETOOTH_CONNECTED.read().unwrap().clone();
+        let connected = STATE.bt_connected();
         if !connected {
             led.toggle()?;
         } else {

@@ -3,19 +3,20 @@ mod blink_led;
 
 use embassy_time::{Duration, Instant, Timer};
 
-use anyhow::{Error, Result};
-use esp_idf_hal::{
-    prelude::Peripherals,
-    task::executor::{EspExecutor, Local},
-};
+use anyhow::Result;
+use esp_idf_hal::task::executor::{EspExecutor, Local};
+
+use crate::{ble, hardware::get_hardware, temp_display};
 
 /// Delay in ms each task shold wait for after running once
 struct Delays {
     blink_led: Duration,
+    temp_display: Duration,
 }
 
 static DELAYS: Delays = Delays {
     blink_led: Duration::from_millis(500),
+    temp_display: Duration::from_secs(5),
 };
 
 /// delay the task for given duration.
@@ -41,9 +42,18 @@ pub(crate) fn setup() -> Result<()> {
     // create executor for async tasks
     let executor = EspExecutor::<16, Local>::new();
 
-    let p = Peripherals::take().ok_or(Error::msg("could not take Peripherals"))?;
+    let hw = get_hardware();
 
-    executor.spawn_detached(blink_led::task_blink_led(DELAYS.blink_led, p.pins.gpio2))?;
+    // setup ble and start advertising
+    ble::setup()?;
+
+    executor.spawn_detached(blink_led::task_blink_led(DELAYS.blink_led, hw.led))?;
+
+    executor.spawn_detached(temp_display::task_temp_display(
+        DELAYS.temp_display,
+        hw.i2c,
+        hw.dht,
+    ))?;
 
     // start task Execution
     executor.run(|| true);

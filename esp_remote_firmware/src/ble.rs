@@ -3,7 +3,7 @@ use std::fmt::Error;
 use esp32_nimble::{utilities::mutex::RawMutex, BLEDevice, BLEService, NimbleProperties};
 use esp_remote_common::{CMD_UUID, SERVICE_UUID};
 
-use crate::state::BLUETOOTH_CONNECTED;
+use crate::STATE;
 
 pub(crate) fn start_advertising(ble: &'static BLEDevice) {
     log::info!("starting advertising");
@@ -15,12 +15,10 @@ pub(crate) fn setup() -> Result<(), Error> {
     let ble_device = BLEDevice::take();
     let server = ble_device.get_server();
     server.on_connect(|_| {
-        let mut connected = BLUETOOTH_CONNECTED.write().unwrap();
-        *connected = true;
+        STATE.set_bt_connected(true);
     });
     server.on_disconnect(|_| {
-        let mut connected = BLUETOOTH_CONNECTED.write().unwrap();
-        *connected = false;
+        STATE.set_bt_connected(false);
     });
     let service = server.create_service(SERVICE_UUID.into());
     println!("created service");

@@ -1,10 +1,13 @@
 mod ble;
-mod state;
+mod hardware;
 mod tasks;
+mod temp_display;
 
 use anyhow::Result;
-use esp_idf_sys as _; // If using the `binstart` feature of `esp-idf-sys`, always keep this module imported
-use std::thread;
+use esp_idf_sys as _;
+use esp_remote_common::state::State; // If using the `binstart` feature of `esp-idf-sys`, always keep this module imported
+
+static STATE: State = State::default();
 
 fn main() -> Result<()> {
     // It is necessary to call this function once. Otherwise some patches to the runtime
@@ -15,15 +18,8 @@ fn main() -> Result<()> {
     // setup timer
     esp_idf_svc::timer::embassy_time::driver::link();
 
-    // setup ble and start advertising
-    ble::setup()?;
-
     // start running tasks on async executor
-    let executor = thread::Builder::new()
-        .name("task-executor".into())
-        .spawn(tasks::setup)
-        .expect("Thread should be crated");
+    tasks::setup().unwrap();
 
-    executor.join().unwrap().unwrap();
-    panic!("Executor Thread exited");
+    panic!("Executor exited");
 }
