@@ -1,53 +1,47 @@
-use std::fmt::Display;
+use std::fmt::{Debug, Display};
 
-use anyhow::Error;
-use dht_sensor::*;
-use embassy_time::{Duration, Instant, Timer};
+use embassy_time::{Duration, Instant};
 use embedded_graphics::{
     mono_font::{iso_8859_1::FONT_7X14, MonoTextStyleBuilder},
     pixelcolor::BinaryColor,
     prelude::*,
+    primitives::{Line, PrimitiveStyle},
     text::{Alignment, Baseline, Text, TextStyleBuilder},
 };
-use esp_idf_hal::i2c::I2cDriver;
 use log::error;
-use sh1106::{prelude::*, Builder};
+use thiserror::Error;
 
-use crate::tasks::delay_task;
+use crate::{
+    hardware::{self, I2cDriver},
+    tasks::delay_task,
+};
 
-pub async fn task_temp_display<E>(
+pub async fn task_temp_display(
     delay: Duration,
-    i2c: I2cDriver<'static>,
-    mut sensor: impl InputOutputPin<E>,
+    i2c: I2cDriver,
+    mut disp: hardware::Display,
+    in_addr: i32,
+    out_addr: i32,
 ) {
-    let mut disp: GraphicsMode<_> = Builder::new()
-        .with_size(DisplaySize::Display128x64)
-        .connect_i2c(i2c)
-        .into();
-    disp.init().unwrap();
-
-    // pull the sensor hight in the beginning
-    sensor
-        .set_high()
-        .map_err(|_| Error::msg("Error setting sensor pin high"))
-        .unwrap();
-    Timer::after(Duration::from_secs(1)).await;
+    let sensor = TempSensor {
+        i2c,
+        in_addr,
+        out_addr,
+    };
 
     loop {
         let start = Instant::now();
 
-        let (temp, hum) = read_sensor(&mut sensor);
-        print_temp(&mut disp, temp, hum);
+        match sensor.read() {
+            Ok(Reading { temp_in, temp_out }) => print_temp(&mut disp, temp_in, temp_out),
+            Err(e) => error!("could not read temps: {e}"),
+        }
 
         delay_task(delay, start).await;
     }
 }
 
-fn print_temp(
-    disp: &mut GraphicsMode<I2cInterface<I2cDriver>>,
-    temp: impl Display,
-    hum: impl Display,
-) {
+fn print_temp(disp: &mut hardware::Display, temp_in: impl Display, temp_out: impl Display) {
     let text_style = MonoTextStyleBuilder::new()
         .font(&FONT_7X14)
         .text_color(BinaryColor::On)
@@ -56,11 +50,20 @@ fn print_temp(
         .alignment(Alignment::Left)
         .baseline(Baseline::Bottom)
         .build();
-    disp.clear();
+    hardware::Display::clear(disp);
+
+    Text::with_baseline("Temperature", Point::zero(), text_style, Baseline::Top)
+        .draw(disp)
+        .unwrap();
+
+    Line::new(Point { x: 0, y: 13 }, Point { x: 76, y: 13 })
+        .into_styled(PrimitiveStyle::with_stroke(BinaryColor::On, 1))
+        .draw(disp)
+        .unwrap();
 
     Text::with_text_style(
-        &format!("Temp: {temp}°C \n Hum: {hum}%"),
-        Point { x: 24, y: 32 },
+        &format!(" In: {temp_in}°C \nOut: {temp_out}°C"),
+        Point { x: 24, y: 36 },
         text_style,
         left_aligned,
     )
@@ -70,25 +73,25 @@ fn print_temp(
     disp.flush().unwrap();
 }
 
-struct DelayU8;
+#[derive(Error, Debug)]
+enum Error {}
 
-impl embedded_hal::blocking::delay::DelayMs<u8> for DelayU8 {
-    fn delay_ms(&mut self, ms: u8) {
-        esp_idf_hal::delay::FreeRtos::delay_ms(ms as u32);
-    }
-}
-impl embedded_hal::blocking::delay::DelayUs<u8> for DelayU8 {
-    fn delay_us(&mut self, us: u8) {
-        esp_idf_hal::delay::FreeRtos::delay_us(us as u32);
-    }
+struct Reading {
+    temp_in: f32,
+    temp_out: f32,
 }
 
-fn read_sensor<E>(sensor: &mut impl InputOutputPin<E>) -> (f32, f32) {
-    match dht22::Reading::read(&mut DelayU8, sensor) {
-        Ok(reading) => (reading.temperature, reading.relative_humidity),
-        Err(_) => {
-            error!("Error reading temp/hum sensor");
-            (0.0, 0.0)
-        }
+struct TempSensor {
+    i2c: I2cDriver,
+    in_addr: i32,
+    out_addr: i32,
+}
+
+impl TempSensor {
+    fn read(&self) -> Result<Reading, Error> {
+        Ok(Reading {
+            temp_in: 25.0,
+            temp_out: 30.0,
+        })
     }
 }
