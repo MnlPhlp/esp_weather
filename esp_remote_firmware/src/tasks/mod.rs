@@ -5,7 +5,6 @@ use embassy_time::{Duration, Instant, Timer};
 
 use anyhow::Result;
 use esp_idf_hal::task::executor::{EspExecutor, Local};
-use log::info;
 
 use crate::{ble, hardware::Hardware, temp_display};
 
@@ -65,7 +64,6 @@ pub(crate) fn setup(hw: Hardware) -> Result<()> {
 
 async fn other_disp_test(mut disp: crate::hardware::Display) {
     loop {
-        info!("Other print");
         Timer::after(Duration::from_secs(10)).await;
         disp.clear();
         let text_style = embedded_graphics::mono_font::MonoTextStyleBuilder::new()

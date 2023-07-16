@@ -1,5 +1,5 @@
 // logger taken from https://github.com/trobanga/flutter_btleplug/blob/main/packages/btleplug/native/src/logger.rs
-use flutter_rust_bridge::StreamSink;
+use flutter_rust_bridge::*;
 use once_cell::sync::OnceCell;
 use std::{sync::RwLock, time};
 

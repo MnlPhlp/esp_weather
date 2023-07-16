@@ -6,10 +6,13 @@ mod temp_display;
 use anyhow::Result;
 use esp_idf_sys as _;
 use esp_remote_common::state::State;
+use lazy_static::lazy_static;
 
 use crate::hardware::get_hardware; // If using the `binstart` feature of `esp-idf-sys`, always keep this module imported
 
-static STATE: State = State::default();
+lazy_static! {
+    static ref STATE: State = State::default();
+}
 
 fn main() -> Result<()> {
     let hw = get_hardware();

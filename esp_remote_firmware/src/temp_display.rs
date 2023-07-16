@@ -8,12 +8,14 @@ use embedded_graphics::{
     primitives::{Line, PrimitiveStyle},
     text::{Alignment, Baseline, Text, TextStyleBuilder},
 };
-use log::error;
+use esp_remote_common::state::SensorState;
+use log::{error, info};
 use thiserror::Error;
 
 use crate::{
     hardware::{self, I2cDriver},
     tasks::delay_task,
+    STATE,
 };
 
 pub async fn task_temp_display(
@@ -33,10 +35,13 @@ pub async fn task_temp_display(
         let start = Instant::now();
 
         match sensor.read() {
-            Ok(Reading { temp_in, temp_out }) => print_temp(&mut disp, temp_in, temp_out),
+            Ok(Reading { temp_in, temp_out }) => {
+                STATE.set_sensor(SensorState { temp_in, temp_out });
+                print_temp(&mut disp, temp_in, temp_out);
+            }
             Err(e) => error!("could not read temps: {e}"),
         }
-
+        info!("display task took: {}ms", start.elapsed().as_millis());
         delay_task(delay, start).await;
     }
 }

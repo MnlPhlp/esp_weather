@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:bluetooth_enable_fork/bluetooth_enable_fork.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -104,9 +102,9 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Column(
         children: [
           TextButton(
-            child: Text("test send"),
-            onPressed: () {
-              api.bleSend(data: Uint8List.fromList([1, 2, 3, 4, 5, 6]));
+            child: Text("test read"),
+            onPressed: () async {
+              print(await api.readState());
             },
           ),
           TextButton(

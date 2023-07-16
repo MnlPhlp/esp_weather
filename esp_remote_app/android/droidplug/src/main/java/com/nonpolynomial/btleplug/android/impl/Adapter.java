@@ -2,8 +2,14 @@ package com.nonpolynomial.btleplug.android.impl;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.le.ScanCallback;
+import android.bluetooth.le.ScanFilter.Builder;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
+import android.os.ParcelUuid;
+
+import java.util.ArrayList;
+import java.util.List;
+import android.util.Log;
 
 @SuppressWarnings("unused") // Native code uses this class.
 class Adapter {
@@ -12,11 +18,24 @@ class Adapter {
 
     public Adapter() {}
 
-    public void startScan() {
+    public void startScan(ScanFilter filter) {
+        try{
+        ArrayList<android.bluetooth.le.ScanFilter> filters = null;
+        String[] uuids = filter.getUuids();
+        if (uuids.length > 0) {
+            filters = new ArrayList<>();
+            for (String uuid : uuids) {
+                filters.add(new Builder().setServiceUuid(ParcelUuid.fromString(uuid)).build());
+            }
+        }
         ScanSettings settings = new ScanSettings.Builder()
                 .setCallbackType(ScanSettings.CALLBACK_TYPE_ALL_MATCHES)
                 .build();
-        BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner().startScan(null, settings, this.callback);
+        BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner().startScan(filters, settings, this.callback);
+        } catch (Exception e){
+            Log.e("adapter","Error: "+e);
+            e.printStackTrace();
+        }
     }
 
     public void stopScan() {
