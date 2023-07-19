@@ -36,6 +36,7 @@ class Peripheral {
     private final LinkedList<WeakReference<QueueStream<BluetoothGattCharacteristic>>> notificationStreams = new LinkedList<>();
     private boolean executingCommand = false;
     private CommandCallback commandCallback;
+    private int mtu;
 
     public Peripheral(Adapter adapter, String address) {
         this.device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(address);
@@ -51,15 +52,23 @@ class Peripheral {
                     CommandCallback callback = new CommandCallback() {
                         @Override
                         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-                            Peripheral.this.asyncWithFuture(future, () -> {
-                                if (status != BluetoothGatt.GATT_SUCCESS) {
-                                    throw new NotConnectedException();
-                                }
+                            if (status != BluetoothGatt.GATT_SUCCESS||newState != BluetoothGatt.STATE_CONNECTED) {
+                                Peripheral.this.wakeCommand(future, null);
+                                return;
+                            }
 
-                                if (newState == BluetoothGatt.STATE_CONNECTED) {
+                            Peripheral.this.commandCallback = new CommandCallback(){
+                                @Override
+                                public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
+                                    Peripheral.this.mtu = mtu;
                                     Peripheral.this.wakeCommand(future, null);
                                 }
-                            });
+                            };
+                            try {
+                                Peripheral.this.gatt.requestMtu(517);
+                            } catch (Exception e) {
+                                Log.e("Droidplug", "error requesting mtu: " + e.toString());
+                            }
                         }
                     };
 
@@ -85,18 +94,6 @@ class Peripheral {
     }
 
     
-    public void requestMtu(int mtu) {
-        synchronized (this) {
-            if (this.gatt != null) {
-                try {
-                    this.gatt.requestMtu(mtu);
-                } catch (Exception e) {
-                    Log.e("Droidplug", "error requesting mtu: " + e.toString());
-                }
-            }
-        }
-    }
-                    
 
     public Future<Void> disconnect() {
         SimpleFuture<Void> future = new SimpleFuture<>();
@@ -467,7 +464,13 @@ class Peripheral {
 
     private class Callback extends BluetoothGattCallback {
         @Override
+        public void onMtuChanged(BluetoothGatt gatt, int mtu,int status ){
+            Peripheral.this.commandCallback.onMtuChanged(gatt,mtu,status);
+        }
+    
+        @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+
             synchronized (Peripheral.this) {
                 switch (newState) {
                     case BluetoothGatt.STATE_CONNECTED:

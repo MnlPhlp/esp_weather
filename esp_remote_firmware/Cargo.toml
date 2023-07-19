@@ -7,7 +7,7 @@ resolver = "2"
 rust-version = "1.66"
 
 [profile.release]
-opt-level = "s"
+opt-level = 3
 
 [profile.dev]
 debug = true    # Symbols are nice and they don't increase the size on Flash
@@ -41,6 +41,8 @@ embedded-graphics = "0.7.1"
 thiserror = "1.0.43"
 embedded-hal = "0.2.7"
 lazy_static = "1.4.0"
+lm75 = "0.2.0"
+dht11 = "0.3.1"
 
 [build-dependencies]
 embuild = "0.31.2"

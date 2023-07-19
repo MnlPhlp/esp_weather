@@ -1,52 +1,74 @@
-use std::fmt::{Debug, Display};
-
+use dht11::Measurement;
 use embassy_time::{Duration, Instant};
 use embedded_graphics::{
     mono_font::{iso_8859_1::FONT_7X14, MonoTextStyleBuilder},
     pixelcolor::BinaryColor,
     prelude::*,
-    primitives::{Line, PrimitiveStyle},
     text::{Alignment, Baseline, Text, TextStyleBuilder},
 };
 use esp_remote_common::state::SensorState;
-use log::{error, info};
-use thiserror::Error;
+use log::error;
 
 use crate::{
-    hardware::{self, I2cDriver},
+    hardware::{Dht11, Display, TempSensor},
     tasks::delay_task,
     STATE,
 };
 
 pub async fn task_temp_display(
     delay: Duration,
-    i2c: I2cDriver,
-    mut disp: hardware::Display,
-    in_addr: i32,
-    out_addr: i32,
+    mut disp: Option<Display>,
+    mut temp_sensor: TempSensor,
+    mut temp_hum_sensor: Dht11,
 ) {
-    let sensor = TempSensor {
-        i2c,
-        in_addr,
-        out_addr,
-    };
+    if let Err(e) = temp_sensor.enable() {
+        error!("Error enabling inside sensor: {e:?}")
+    }
 
+    let mut start = Instant::now();
+    let mut temp_out = 0.0;
+    let mut reading = Measurement::default();
     loop {
-        let start = Instant::now();
+        temp_out = read_temp(&mut temp_sensor, temp_out);
+        reading = read_temp_hum(&mut temp_hum_sensor, reading);
+        let temp_in = reading.temperature as f32 / 10.0;
+        let hum_in = reading.humidity as f32 / 10.0;
 
-        match sensor.read() {
-            Ok(Reading { temp_in, temp_out }) => {
-                STATE.set_sensor(SensorState { temp_in, temp_out });
-                print_temp(&mut disp, temp_in, temp_out);
-            }
-            Err(e) => error!("could not read temps: {e}"),
+        let state = SensorState {
+            temp_in,
+            temp_out,
+            hum_in,
+        };
+        STATE.set_sensor(state);
+        if let Some(disp) = &mut disp {
+            print_temp(disp, temp_out, temp_in, hum_in);
         }
-        info!("display task took: {}ms", start.elapsed().as_millis());
-        delay_task(delay, start).await;
+
+        delay_task(delay, &mut start).await;
     }
 }
 
-fn print_temp(disp: &mut hardware::Display, temp_in: impl Display, temp_out: impl Display) {
+fn read_temp_hum(temp_hum_sensor: &mut Dht11, temp_hum: Measurement) -> Measurement {
+    match temp_hum_sensor.perform_measurement(&mut embassy_time::Delay) {
+        Ok(val) => val,
+        Err(e) => {
+            error!("could not read temp_hum: {e:?}");
+            temp_hum
+        }
+    }
+}
+
+fn read_temp(temp_sensor: &mut TempSensor, old_temp: f32) -> f32 {
+    match temp_sensor.read_temperature() {
+        Ok(val) => val,
+        Err(e) => {
+            error!("could not read temperature: {e:?}");
+            old_temp
+        }
+    }
+}
+
+fn print_temp(disp: &mut Display, temp_out: f32, temp_in: f32, hum_in: f32) {
     let text_style = MonoTextStyleBuilder::new()
         .font(&FONT_7X14)
         .text_color(BinaryColor::On)
@@ -55,20 +77,11 @@ fn print_temp(disp: &mut hardware::Display, temp_in: impl Display, temp_out: imp
         .alignment(Alignment::Left)
         .baseline(Baseline::Bottom)
         .build();
-    hardware::Display::clear(disp);
-
-    Text::with_baseline("Temperature", Point::zero(), text_style, Baseline::Top)
-        .draw(disp)
-        .unwrap();
-
-    Line::new(Point { x: 0, y: 13 }, Point { x: 76, y: 13 })
-        .into_styled(PrimitiveStyle::with_stroke(BinaryColor::On, 1))
-        .draw(disp)
-        .unwrap();
+    disp.clear(BinaryColor::Off).unwrap();
 
     Text::with_text_style(
-        &format!(" In: {temp_in}°C \nOut: {temp_out}°C"),
-        Point { x: 24, y: 36 },
+        &format!("In:  {temp_in:.1} °C\n     {hum_in:3.1} %rel.\n\nOut: {temp_out:.1} °C"),
+        Point { x: 16, y: 16 },
         text_style,
         left_aligned,
     )
@@ -76,27 +89,4 @@ fn print_temp(disp: &mut hardware::Display, temp_in: impl Display, temp_out: imp
     .unwrap();
 
     disp.flush().unwrap();
-}
-
-#[derive(Error, Debug)]
-enum Error {}
-
-struct Reading {
-    temp_in: f32,
-    temp_out: f32,
-}
-
-struct TempSensor {
-    i2c: I2cDriver,
-    in_addr: i32,
-    out_addr: i32,
-}
-
-impl TempSensor {
-    fn read(&self) -> Result<Reading, Error> {
-        Ok(Reading {
-            temp_in: 25.0,
-            temp_out: 30.0,
-        })
-    }
 }

@@ -2,6 +2,7 @@ use std::fmt::Error;
 
 use esp32_nimble::{utilities::mutex::RawMutex, BLEDevice, BLEService, NimbleProperties};
 use esp_remote_common::{SERVICE_UUID, STATE_UUID};
+use log::info;
 
 use crate::STATE;
 
@@ -32,7 +33,8 @@ fn setup_service(service: std::sync::Arc<embedded_svc::utils::mutex::Mutex<RawMu
     let mut service = service.lock();
     let charac = service.create_characteristic(STATE_UUID.into(), NimbleProperties::READ);
     println!("Created charac");
-    charac
-        .lock()
-        .on_read(|val, _| val.set_value(&STATE.to_bytes()));
+    charac.lock().on_read(|val, _| {
+        info!("Setting STATE value");
+        val.set_value(&STATE.to_bytes());
+    });
 }

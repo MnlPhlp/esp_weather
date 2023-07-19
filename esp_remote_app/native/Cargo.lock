@@ -110,6 +110,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6776fc96284a0bb647b615056fc496d1fe1644a7ab01829818a6d91cae888b84"
 
 [[package]]
+name = "blec"
+version = "0.2.0"
+dependencies = [
+ "btleplug",
+ "futures",
+ "jni",
+ "jni-utils",
+ "log",
+ "once_cell",
+ "thiserror",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
 name = "block"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -170,20 +185,6 @@ dependencies = [
  "tokio-stream",
  "uuid",
  "windows",
-]
-
-[[package]]
-name = "btleplug_helper"
-version = "0.1.0"
-dependencies = [
- "btleplug",
- "futures",
- "jni",
- "jni-utils",
- "once_cell",
- "thiserror",
- "tokio",
- "uuid",
 ]
 
 [[package]]
@@ -427,7 +428,9 @@ dependencies = [
 
 [[package]]
 name = "flutter_rust_bridge"
-version = "1.78.0"
+version = "1.79.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0c8be4e3bf1221c2ce3e8006d548f4d3618deda475f192a65e0d55b33796cacc"
 dependencies = [
  "allo-isolate",
  "anyhow",
@@ -451,7 +454,9 @@ dependencies = [
 
 [[package]]
 name = "flutter_rust_bridge_macros"
-version = "1.78.0"
+version = "1.79.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "237edf0d1cea56e5699ee37f906c265de99d55657df4ff2c006ada9541c04996"
 
 [[package]]
 name = "foreign-types"
@@ -774,7 +779,7 @@ name = "native"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "btleplug_helper",
+ "blec",
  "esp_remote_common",
  "flutter_rust_bridge",
  "futures",

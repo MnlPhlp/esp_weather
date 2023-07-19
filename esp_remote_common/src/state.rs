@@ -22,10 +22,11 @@ pub struct InnerState {
     bt_connected: bool,
     sensor: SensorState,
 }
-#[derive(Default, Clone, Serialize, Deserialize)]
+#[derive(Default, Clone, Serialize, Deserialize, Debug)]
 pub struct SensorState {
     pub temp_in: f32,
     pub temp_out: f32,
+    pub hum_in: f32,
 }
 
 #[derive(Default)]
