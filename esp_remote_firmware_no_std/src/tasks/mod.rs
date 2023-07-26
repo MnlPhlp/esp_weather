@@ -1,6 +1,10 @@
+use alloc::boxed::Box;
 use embassy_time::{Duration, Instant, Timer};
 
-use crate::hardware::Hardware;
+use crate::{
+    ble::{self, BleHandler},
+    hardware::Hardware,
+};
 
 mod blink_led;
 mod temp_display;
@@ -32,6 +36,8 @@ pub async fn delay_task(task_delay: Duration, start: &mut Instant) {
 }
 
 pub(crate) fn setup(spawner: embassy_executor::Spawner, hw: Hardware) {
+    let ble_handler = Box::leak(Box::new(BleHandler::new(hw.ble)));
+    spawner.spawn(ble::setup(ble_handler)).unwrap();
     spawner.spawn(blink_led::run(hw.led)).unwrap();
     spawner
         .spawn(temp_display::run(hw.disp, hw.lm75, hw.dht11))

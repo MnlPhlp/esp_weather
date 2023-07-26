@@ -5,6 +5,8 @@ authors = ["MnlPhlp <online@philipp-manuel.de>"]
 edition = "2021"
 license = "MIT OR Apache-2.0"
 
+[profile.dev.package.esp-wifi]
+opt-level = 3
 
 [dependencies]
 hal = { package = "esp32-hal", version = "0.13.0" ,features=["embassy-time-timg0","embassy"] }
@@ -20,5 +22,6 @@ embedded-graphics = "0.7.1"
 lm75 = "0.2.0"
 dht11 = "0.3.1"
 esp-wifi = { git="https://github.com/esp-rs/esp-wifi", rev = "37dd9ed7ae07a86f7afaef34fa4cbb48ad41b210", features = ["esp32","ble","async"] }
-bleps = { git="https://github.com/bjoernQ/bleps", rev = "4f1aae7274fb68bde6d11753800baa7e050166d6", features = ["async","macros"] }
+# bleps = { git="https://github.com/MnlPhlp/bleps.git", rev = "31c1487", features = ["async","macros","uuid"] }
+bleps = { path = "/home/manuel/programming/bleps/bleps", features = ["async","macros","uuid"] }
 esp_remote_common = { path="../esp_remote_common" }

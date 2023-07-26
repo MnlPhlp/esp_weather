@@ -4,7 +4,7 @@ use alloc::boxed::Box;
 use bleps::asynch::Ble;
 use esp_wifi::{ble::controller::asynch::BleConnector, initialize, EspWifiInitFor};
 use hal::{
-    clock::{ClockControl, Clocks},
+    clock::{ClockControl, Clocks, CpuClock},
     gpio::{GpioPin, OpenDrain, Output, PushPull},
     i2c::I2C,
     peripherals::{Peripherals, I2C0, TIMG0},
@@ -18,7 +18,7 @@ use sh1106::prelude::*;
 pub(crate) fn get_hardware() -> (Hardware, Timer<Timer0<TIMG0>>) {
     let peripherals = Peripherals::take();
     let mut system = peripherals.DPORT.split();
-    let clocks = ClockControl::boot_defaults(system.clock_control).freeze();
+    let clocks = ClockControl::configure(system.clock_control, CpuClock::Clock240MHz).freeze();
 
     // Disable the RTC and TIMG watchdog timers
     let mut rtc = Rtc::new(peripherals.RTC_CNTL);

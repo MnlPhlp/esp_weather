@@ -100,19 +100,18 @@ checksum = "630be753d4e58660abd17930c71b647fe46c27ea6b63cc59e1e3851406972e42"
 [[package]]
 name = "bleps"
 version = "0.1.0"
-source = "git+https://github.com/bjoernQ/bleps?rev=4f1aae7274fb68bde6d11753800baa7e050166d6#4f1aae7274fb68bde6d11753800baa7e050166d6"
 dependencies = [
  "bleps-macros",
  "critical-section",
  "embedded-io",
  "futures",
  "log",
+ "uuid",
 ]
 
 [[package]]
 name = "bleps-macros"
 version = "0.1.0"
-source = "git+https://github.com/bjoernQ/bleps?rev=4f1aae7274fb68bde6d11753800baa7e050166d6#4f1aae7274fb68bde6d11753800baa7e050166d6"
 dependencies = [
  "litrs",
  "proc-macro2",
