@@ -32,7 +32,7 @@ esp-idf-sys = { version = "0.33", default-features = false }
 esp-idf-hal = { version = "0.41", optional = true, default-features = false }
 esp-idf-svc = { version = "0.46", optional = true, default-features = false }
 embedded-svc = { version = "0.25", optional = true, default-features = false }
-esp32-nimble = { version= "0.1.1", git="https://github.com/MnlPhlp/esp32-nimble.git" }
+esp32-nimble = { version= "0.1.4" }
 esp_remote_common = {path = "../esp_remote_common"}
 anyhow = "1.0.71"
 embassy-time = { version = "0.1", features = ["tick-hz-1_000_000"] }

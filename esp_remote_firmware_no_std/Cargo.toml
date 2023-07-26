@@ -1,0 +1,24 @@
+[package]
+name = "esp_center"
+version = "0.1.0"
+authors = ["MnlPhlp <online@philipp-manuel.de>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+
+[dependencies]
+hal = { package = "esp32-hal", version = "0.13.0" ,features=["embassy-time-timg0","embassy"] }
+esp-backtrace = { version = "0.7.0", features = ["esp32", "panic-handler", "exception-handler", "print-uart"] }
+esp-println       = { version = "0.5.0", features = ["esp32","log"] }
+esp-alloc = { version = "0.3.0" }
+log = { version = "0.4.18" }
+embassy-time       = { version = "0.1.2",  features = ["nightly","tick-hz-1_000_000"] }
+embassy-executor  = { version = "0.2.0", features = ["nightly", "integrated-timers", "arch-xtensa", "executor-thread"] }
+static_cell = "1.2.0"
+sh1106 = "0.4.0"
+embedded-graphics = "0.7.1"
+lm75 = "0.2.0"
+dht11 = "0.3.1"
+esp-wifi = { git="https://github.com/esp-rs/esp-wifi", rev = "37dd9ed7ae07a86f7afaef34fa4cbb48ad41b210", features = ["esp32","ble","async"] }
+bleps = { git="https://github.com/bjoernQ/bleps", rev = "4f1aae7274fb68bde6d11753800baa7e050166d6", features = ["async","macros"] }
+esp_remote_common = { path="../esp_remote_common" }

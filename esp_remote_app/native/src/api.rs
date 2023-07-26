@@ -4,6 +4,7 @@
 
 use std::time::Instant;
 
+use anyhow::anyhow;
 use anyhow::Result;
 pub use esp_remote_common::state::{SensorState, State};
 use esp_remote_common::SERVICE_UUID;
@@ -58,7 +59,7 @@ fn read_state_inner() -> Result<AppState> {
         data.len(),
         start.elapsed()
     ));
-    let state = State::from_bytes(data)?;
+    let state = State::from_bytes(&data).map_err(|e| anyhow!("error reading state: {e}"))?;
     Ok(AppState {
         sensors: state.sensor(),
     })

@@ -1,3 +1,5 @@
+#![no_std]
+
 use uuid::{uuid, Uuid};
 pub mod state;
 
