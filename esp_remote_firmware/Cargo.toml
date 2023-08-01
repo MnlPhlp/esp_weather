@@ -41,8 +41,7 @@ embedded-graphics = "0.7.1"
 thiserror = "1.0.43"
 embedded-hal = "0.2.7"
 lazy_static = "1.4.0"
-lm75 = "0.2.0"
-dht11 = "0.3.1"
+dht-hal-drv = "0.2.2"
 
 [build-dependencies]
 embuild = "0.31.2"

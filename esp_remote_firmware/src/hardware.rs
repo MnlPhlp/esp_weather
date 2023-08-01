@@ -1,7 +1,6 @@
 use anyhow::Error;
-use esp_idf_hal::gpio::{self, Gpio4, InputOutput, PinDriver};
+use esp_idf_hal::gpio::{self, Gpio16, Gpio4, InputOutput, PinDriver};
 use esp_idf_hal::prelude::*;
-use lm75::{ic, Lm75};
 use log::error;
 use sh1106::prelude::*;
 
@@ -10,15 +9,15 @@ pub use self::i2c::I2cDriver;
 mod display;
 mod i2c;
 
-pub type TempSensor = Lm75<I2cDriver, ic::Lm75>;
-pub type Dht11 = dht11::Dht11<PinDriver<'static, Gpio4, InputOutput>>;
+pub type Dht11Pin = PinDriver<'static, Gpio4, InputOutput>;
+pub type Dht22Pin = PinDriver<'static, Gpio16, InputOutput>;
 
 pub struct Hardware {
     pub led: gpio::Gpio2,
     pub i2c: I2cDriver,
     pub disp: Option<Display>,
-    pub temp_in: TempSensor,
-    pub temp_hum: Dht11,
+    pub dht11_pin: Dht11Pin,
+    pub dht22_pin: Dht22Pin,
 }
 
 pub fn get_hardware() -> Hardware {
@@ -53,16 +52,14 @@ pub fn get_hardware() -> Hardware {
         }
     };
 
-    let temp_in = Lm75::new(i2c.clone(), 0x48);
-
-    let pin = PinDriver::input_output_od(p.pins.gpio4).unwrap();
-    let temp_hum = Dht11::new(pin);
+    let dht11_pin = PinDriver::input_output_od(p.pins.gpio4).unwrap();
+    let dht22_pin = PinDriver::input_output_od(p.pins.gpio16).unwrap();
 
     Hardware {
         led: p.pins.gpio2,
         i2c,
         disp,
-        temp_in,
-        temp_hum,
+        dht11_pin,
+        dht22_pin,
     }
 }

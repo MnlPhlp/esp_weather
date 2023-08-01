@@ -25,13 +25,14 @@ macro_rules! get_set {
 #[derive(Default, Clone, Encode, Decode)]
 pub struct InnerState {
     bt_connected: bool,
-    sensor: SensorState,
+    sensors: SensorState,
 }
 #[derive(Default, Clone, Encode, Decode, Debug)]
 pub struct SensorState {
     pub temp_in: f32,
     pub temp_out: f32,
     pub hum_in: f32,
+    pub hum_out: f32,
 }
 
 const CONFIG: Configuration = config::standard();
@@ -40,7 +41,7 @@ const CONFIG: Configuration = config::standard();
 pub struct State(Mutex<InnerState>);
 impl State {
     get_set!(bt_connected, bool);
-    get_set!(sensor, SensorState);
+    get_set!(sensors, SensorState);
 
     pub fn to_bytes(&self) -> Vec<u8> {
         let inner = self.0.lock();

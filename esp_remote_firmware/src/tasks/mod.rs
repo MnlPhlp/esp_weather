@@ -1,22 +1,26 @@
 // this module contains functions for long-running async tasks
 mod blink_led;
+mod display;
+mod read_sensors;
 
 use embassy_time::{Duration, Instant, Timer};
 
 use anyhow::Result;
 use esp_idf_hal::task::executor::{EspExecutor, Local};
 
-use crate::{ble, hardware, temp_display};
+use crate::hardware;
 
 /// Delay in ms each task shold wait for after running once
 struct Delays {
     blink_led: Duration,
-    temp_display: Duration,
+    sample_sensors: Duration,
+    display: Duration,
 }
 
 static DELAYS: Delays = Delays {
     blink_led: Duration::from_millis(500),
-    temp_display: Duration::from_secs(5),
+    sample_sensors: Duration::from_secs(2),
+    display: Duration::from_secs(4),
 };
 
 /// delay the task for given duration.
@@ -35,27 +39,22 @@ pub async fn delay_task(task_delay: Duration, start: &mut Instant) {
 }
 
 pub(crate) fn setup() -> Result<()> {
-    log::info!(
-        "starting task-runner on core {:?}",
-        esp_idf_hal::cpu::core()
-    );
-
     // create executor for async tasks
     let executor = EspExecutor::<16, Local>::new();
-
-    // setup ble and start advertising
-    ble::setup()?;
 
     let hw = hardware::get_hardware();
 
     executor.spawn_detached(blink_led::task_blink_led(DELAYS.blink_led, hw.led))?;
 
-    executor.spawn_detached(temp_display::task_temp_display(
-        DELAYS.temp_display,
-        hw.disp.clone(),
-        hw.temp_in,
-        hw.temp_hum,
+    executor.spawn_detached(read_sensors::run(
+        DELAYS.sample_sensors,
+        hw.dht11_pin,
+        hw.dht22_pin,
     ))?;
+
+    if let Some(disp) = hw.disp {
+        executor.spawn_detached(display::run(DELAYS.display, disp))?;
+    }
 
     // start task Execution
     executor.run(|| true);
