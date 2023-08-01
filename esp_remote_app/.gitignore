@@ -53,3 +53,8 @@ native/target
 assets/git
 assets/
 
+
+# java stuff
+.settings
+.project
+.classpath
