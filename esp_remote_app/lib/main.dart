@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'ESP Remote'),
     );
   }
 }
@@ -73,6 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // These futures belong to the state and are only initialized once,
   // in the initState method.
   List<BleDevice> bleDevices = [];
+  SensorState sensors = SensorState(tempIn: 0, tempOut: 0, humIn: 0, humOut: 0);
 
   @override
   void initState() {
@@ -80,9 +81,24 @@ class _MyHomePageState extends State<MyHomePage> {
     async_init();
   }
 
+  String levelLabel(Level logLevel) {
+    switch (logLevel) {
+      case Level.Error:
+        return "E";
+      case Level.Warn:
+        return "W";
+      case Level.Info:
+        return "I";
+      case Level.Debug:
+        return "D";
+      case Level.Trace:
+        return "T";
+    }
+  }
+
   void async_init() async {
-    api.createLogStream().listen((log) => print(
-        "rust-log ${Duration(milliseconds: log.timeMillis)}: ${log.msg}"));
+    api.createLogStream().listen(
+        (log) => print("rust-log ${levelLabel(log.logLevel)}: ${log.msg}"));
     await api.init();
   }
 
@@ -102,9 +118,15 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Column(
         children: [
           TextButton(
-            child: Text("test read"),
+            child: Text("read sensors"),
             onPressed: () async {
-              print(await api.readState());
+              var state = await api.readState();
+              if (state == null) {
+                return;
+              }
+              setState(() {
+                sensors = state.sensors;
+              });
             },
           ),
           TextButton(
@@ -112,12 +134,20 @@ class _MyHomePageState extends State<MyHomePage> {
             onPressed: () => checkPerm(),
           ),
           TextButton(
-            child: Text("test discover"),
+            child: Text("discover"),
             onPressed: () {
               api.bleDiscover(timeout: 5000).listen((devices) => setState(() {
                     bleDevices = devices;
                   }));
             },
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              inside(sensors),
+              const SizedBox(width: 20),
+              outside(sensors),
+            ],
           ),
           Expanded(
             child: ListView.builder(
@@ -125,6 +155,9 @@ class _MyHomePageState extends State<MyHomePage> {
               itemBuilder: (ctx, idx) => TextButton(
                   onPressed: () async {
                     await api.bleConnect(id: bleDevices[idx].address);
+                    setState(() {
+                      bleDevices = [];
+                    });
                   },
                   child: Text(
                       "${bleDevices[idx].name} (${bleDevices[idx].address})")),
@@ -134,4 +167,16 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
+}
+
+Widget inside(SensorState sensors) {
+  return Text(
+    "Inside:\n    ${sensors.tempIn.round()} °C\n    ${sensors.humIn.round()} %rel.",
+  );
+}
+
+Widget outside(SensorState sensors) {
+  return Text(
+    "Outside:\n    ${sensors.tempOut.round()} °C\n    ${sensors.humOut.round()} %rel.",
+  );
 }

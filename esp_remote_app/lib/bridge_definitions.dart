@@ -29,10 +29,6 @@ abstract class Native {
 
   FlutterRustBridgeTaskConstMeta get kInitConstMeta;
 
-  Future<void> logTest({dynamic hint});
-
-  FlutterRustBridgeTaskConstMeta get kLogTestConstMeta;
-
   Stream<LogEntry> createLogStream({dynamic hint});
 
   FlutterRustBridgeTaskConstMeta get kCreateLogStreamConstMeta;
@@ -58,13 +54,25 @@ class BleDevice {
   });
 }
 
+enum Level {
+  Error,
+  Warn,
+  Info,
+  Debug,
+  Trace,
+}
+
 class LogEntry {
   final int timeMillis;
   final String msg;
+  final Level logLevel;
+  final String lbl;
 
   const LogEntry({
     required this.timeMillis,
     required this.msg,
+    required this.logLevel,
+    required this.lbl,
   });
 }
 
@@ -72,10 +80,12 @@ class SensorState {
   final double tempIn;
   final double tempOut;
   final double humIn;
+  final double humOut;
 
   const SensorState({
     required this.tempIn,
     required this.tempOut,
     required this.humIn,
+    required this.humOut,
   });
 }

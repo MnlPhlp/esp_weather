@@ -27,11 +27,6 @@ pub extern "C" fn wire_init(port_: i64) {
 }
 
 #[no_mangle]
-pub extern "C" fn wire_log_test(port_: i64) {
-    wire_log_test_impl(port_)
-}
-
-#[no_mangle]
 pub extern "C" fn wire_create_log_stream(port_: i64) {
     wire_create_log_stream_impl(port_)
 }

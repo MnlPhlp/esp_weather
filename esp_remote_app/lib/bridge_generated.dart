@@ -108,22 +108,6 @@ class NativeImpl implements Native {
         argNames: [],
       );
 
-  Future<void> logTest({dynamic hint}) {
-    return _platform.executeNormal(FlutterRustBridgeTask(
-      callFfi: (port_) => _platform.inner.wire_log_test(port_),
-      parseSuccessData: _wire2api_unit,
-      constMeta: kLogTestConstMeta,
-      argValues: [],
-      hint: hint,
-    ));
-  }
-
-  FlutterRustBridgeTaskConstMeta get kLogTestConstMeta =>
-      const FlutterRustBridgeTaskConstMeta(
-        debugName: "log_test",
-        argNames: [],
-      );
-
   Stream<LogEntry> createLogStream({dynamic hint}) {
     return _platform.executeStream(FlutterRustBridgeTask(
       callFfi: (port_) => _platform.inner.wire_create_log_stream(port_),
@@ -181,8 +165,16 @@ class NativeImpl implements Native {
     return raw as double;
   }
 
+  int _wire2api_i32(dynamic raw) {
+    return raw as int;
+  }
+
   int _wire2api_i64(dynamic raw) {
     return castInt(raw);
+  }
+
+  Level _wire2api_level(dynamic raw) {
+    return Level.values[raw as int];
   }
 
   List<BleDevice> _wire2api_list_ble_device(dynamic raw) {
@@ -191,11 +183,13 @@ class NativeImpl implements Native {
 
   LogEntry _wire2api_log_entry(dynamic raw) {
     final arr = raw as List<dynamic>;
-    if (arr.length != 2)
-      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
     return LogEntry(
       timeMillis: _wire2api_i64(arr[0]),
       msg: _wire2api_String(arr[1]),
+      logLevel: _wire2api_level(arr[2]),
+      lbl: _wire2api_String(arr[3]),
     );
   }
 
@@ -205,12 +199,13 @@ class NativeImpl implements Native {
 
   SensorState _wire2api_sensor_state(dynamic raw) {
     final arr = raw as List<dynamic>;
-    if (arr.length != 3)
-      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    if (arr.length != 4)
+      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
     return SensorState(
       tempIn: _wire2api_f32(arr[0]),
       tempOut: _wire2api_f32(arr[1]),
       humIn: _wire2api_f32(arr[2]),
+      humOut: _wire2api_f32(arr[3]),
     );
   }
 
@@ -430,20 +425,6 @@ class NativeWire implements FlutterRustBridgeWireBase {
   late final _wire_initPtr =
       _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>('wire_init');
   late final _wire_init = _wire_initPtr.asFunction<void Function(int)>();
-
-  void wire_log_test(
-    int port_,
-  ) {
-    return _wire_log_test(
-      port_,
-    );
-  }
-
-  late final _wire_log_testPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Int64)>>(
-          'wire_log_test');
-  late final _wire_log_test =
-      _wire_log_testPtr.asFunction<void Function(int)>();
 
   void wire_create_log_stream(
     int port_,

@@ -120,6 +120,8 @@ checksum = "630be753d4e58660abd17930c71b647fe46c27ea6b63cc59e1e3851406972e42"
 [[package]]
 name = "blec"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "34b561946875b7993fc7ba8250967c527bb0c27b322f8e6d70a4eaccbd9cfdb5"
 dependencies = [
  "btleplug",
  "futures",
@@ -431,6 +433,18 @@ dependencies = [
  "paste",
  "spin",
  "uuid",
+]
+
+[[package]]
+name = "flutter_logger"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b5b4eedc4e9ac82557add1aeb77705cc786362510e3f9316ac27a6e12e10f163"
+dependencies = [
+ "flutter_rust_bridge",
+ "log",
+ "once_cell",
+ "thiserror",
 ]
 
 [[package]]
@@ -779,6 +793,7 @@ dependencies = [
  "anyhow",
  "blec",
  "esp_remote_common",
+ "flutter_logger",
  "flutter_rust_bridge",
  "futures",
  "jni",

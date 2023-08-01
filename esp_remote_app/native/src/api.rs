@@ -11,15 +11,17 @@ use esp_remote_common::SERVICE_UUID;
 use esp_remote_common::STATE_UUID;
 use flutter_rust_bridge::*;
 use futures::executor::block_on;
+use log::info;
+use log::LevelFilter;
 use tokio::sync::mpsc;
 
-use crate::logger;
-use crate::logger::log;
 pub use blec::BleDevice;
+pub use flutter_logger::LogEntry;
 use log::error;
+pub use log::Level;
 
 pub fn ble_discover(sink: StreamSink<Vec<BleDevice>>, timeout: u64) {
-    logger::log("discovering");
+    info!("discovering");
     let (tx, mut rx) = mpsc::channel(1);
     blec::discover(tx, timeout).unwrap();
     let ret = blec::spawn(async move {
@@ -51,17 +53,13 @@ pub struct AppState {
 }
 
 fn read_state_inner() -> Result<AppState> {
-    logger::log("reading");
+    info!("reading");
     let start = Instant::now();
     let data = block_on(blec::recv_data(STATE_UUID))?;
-    logger::log(format!(
-        "received {} bytes in {:?}",
-        data.len(),
-        start.elapsed()
-    ));
+    info!("received {} bytes in {:?}", data.len(), start.elapsed());
     let state = State::from_bytes(&data).map_err(|e| anyhow!("error reading state: {e}"))?;
     Ok(AppState {
-        sensors: state.sensor(),
+        sensors: state.sensors(),
     })
 }
 
@@ -69,26 +67,22 @@ pub fn read_state() -> Option<AppState> {
     match read_state_inner() {
         Ok(val) => Some(val),
         Err(e) => {
-            logger::log(format!("Error reading state: {e}"));
+            error!("Error reading state: {e}");
             None
         }
     }
 }
 
 pub fn init() {
-    log("starting init");
+    info!("starting init");
     match blec::init() {
-        Ok(_) => log("init done"),
-        Err(e) => log(format!("Error while running init: {e}")),
+        Ok(_) => info!("init done"),
+        Err(e) => error!("Error while running init: {e}"),
     }
 }
 
-pub fn log_test() {
-    log("Hello World!");
-}
-
-pub fn create_log_stream(s: StreamSink<logger::LogEntry>) {
-    logger::create_log_stream(s);
+pub fn create_log_stream(s: StreamSink<LogEntry>) {
+    flutter_logger::init(s, LevelFilter::Info).unwrap();
 }
 
 // mirroring some structs
@@ -105,4 +99,22 @@ struct _SensorState {
     temp_in: f32,
     temp_out: f32,
     hum_in: f32,
+    hum_out: f32,
+}
+
+#[frb(mirror(LogEntry))]
+struct _LogEntry {
+    time_millis: i64,
+    msg: String,
+    log_level: Level,
+    lbl: String,
+}
+
+#[frb(mirror(Level))]
+enum _Level {
+    Error,
+    Warn,
+    Info,
+    Debug,
+    Trace,
 }

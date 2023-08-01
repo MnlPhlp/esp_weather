@@ -20,5 +20,5 @@ esp_remote_common = {path = "../../esp_remote_common"}
 uuid = "1.3.3"
 log = "0.4.19"
 flutter_rust_bridge = { version = "1.79.0", features = ["uuid"] }
-# blec = "0.2.0"
-blec = {path="/home/manuel/programming/blec"}
+blec = "0.2.0"
+flutter_logger = { version = "0.3.0", features = ["panic"] }
