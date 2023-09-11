@@ -24,4 +24,4 @@ dht11 = "0.3.1"
 esp-wifi = { git="https://github.com/esp-rs/esp-wifi", rev = "37dd9ed7ae07a86f7afaef34fa4cbb48ad41b210", features = ["esp32","ble","async"] }
 # bleps = { git="https://github.com/MnlPhlp/bleps.git", rev = "31c1487", features = ["async","macros","uuid"] }
 bleps = { path = "/home/manuel/programming/bleps/bleps", features = ["async","macros","uuid"] }
-esp_remote_common = { path="../esp_remote_common" }
+esp_weather_common = { path="../esp_weather_common" }

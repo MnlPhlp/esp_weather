@@ -671,7 +671,7 @@ dependencies = [
  "esp-println",
  "esp-wifi",
  "esp32-hal",
- "esp_remote_common",
+ "esp_weather_common",
  "lm75",
  "log",
  "sh1106",
@@ -679,7 +679,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "esp_remote_common"
+name = "esp_weather_common"
 version = "0.1.0"
 dependencies = [
  "bincode",

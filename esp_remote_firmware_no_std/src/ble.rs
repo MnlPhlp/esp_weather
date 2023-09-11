@@ -9,7 +9,7 @@ use bleps::{
 };
 use esp_backtrace as _;
 use esp_println::println;
-use esp_remote_common::SERVICE_UUID;
+use esp_weather_common::SERVICE_UUID;
 use log::info;
 
 use crate::hardware::BleCon;

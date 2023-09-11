@@ -1,2 +1,2 @@
-# esp_remote
-building a universal remote with an esp32, rust and flutter
+# esp_weather
+weather station powerd by an esp32 and rust.
