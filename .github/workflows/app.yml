@@ -1,0 +1,27 @@
+name: App
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ghcr.io/mnlphlp/flutter_rust_builder:latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        working-directory: ./esp_weather_app
+        run: flutter pub get
+
+      - name: Gen flutter_rust_bridge bindings
+        working-directory: ./esp_weather_app
+        run: just gen
+
+      - name: build apk
+        working-directory: ./esp_weather_app
+        run: flutter build apk --release
