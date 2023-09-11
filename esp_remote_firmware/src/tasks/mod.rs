@@ -19,7 +19,7 @@ struct Delays {
 
 static DELAYS: Delays = Delays {
     blink_led: Duration::from_millis(500),
-    sample_sensors: Duration::from_secs(2),
+    sample_sensors: Duration::from_secs(1),
     display: Duration::from_secs(4),
 };
 
@@ -50,6 +50,7 @@ pub(crate) fn setup() -> Result<()> {
         DELAYS.sample_sensors,
         hw.dht11_pin,
         hw.dht22_pin,
+        hw.i2c,
     ))?;
 
     if let Some(disp) = hw.disp {
