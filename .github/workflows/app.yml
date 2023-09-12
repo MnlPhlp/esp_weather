@@ -26,7 +26,7 @@ jobs:
         run: flutter --version && rustup show
 
       - name: install crates
-        run: cargo install just cargo-expand
+        run: cargo install just cargo-expand flutter_rust_bridge_codegen
 
       - name: Install dependencies
         working-directory: ./esp_weather_app
