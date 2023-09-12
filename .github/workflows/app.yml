@@ -37,6 +37,9 @@ jobs:
       - name: check toolchain
         run: flutter --version && rustup show
 
+      - name: setup ndk
+        run: sdkmanager --install "ndk;25.2.9519653" && mkdir -p ~/.gradle && echo 'ANDROID_NDK=/opt/android-sdk-linux/ndk/25.2.9519653' >> ~/.gradle/gradle.properties
+
       - name: install crates
         run: cargo install just cargo-expand flutter_rust_bridge_codegen
       
