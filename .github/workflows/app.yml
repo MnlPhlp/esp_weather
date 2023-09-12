@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ghcr.io/mnlphlp/flutter_rust_builder:latest
+    container: ghcr.io/mnlphlp/flutter_rust_builder:v1.2.1
 
     steps:
       - uses: actions/checkout@v3
