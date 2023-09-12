@@ -9,13 +9,21 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ghcr.io/mnlphlp/flutter_rust_builder:v1.2.1
 
     steps:
       - uses: actions/checkout@v3
+      - uses: steebchen/flutter@v1.1.0
+      - uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: stable 
+          # Comma-separated list of target triples to install for this toolchain
+          targets: aarch64-linux-android, armv7-linux-androideabi,i686-linux-android, x86_64-linux-android, x86_64-unknown-linux-gnu
 
       - name: check toolchain
-        run: rustup default stable && rustup show
+        run: flutter --version && rustup show
+
+      - name: install crates
+        run: cargo install just cargo-expand
 
       - name: Install dependencies
         working-directory: ./esp_weather_app
