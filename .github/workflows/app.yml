@@ -21,14 +21,29 @@ jobs:
           toolchain: stable 
           # Comma-separated list of target triples to install for this toolchain
           targets: aarch64-linux-android, armv7-linux-androideabi,i686-linux-android, x86_64-linux-android, x86_64-unknown-linux-gnu
+      
+      - name: rust cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            ./esp_weatehr_app/native/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
 
       - name: check toolchain
         run: flutter --version && rustup show
 
       - name: install crates
         run: cargo install just cargo-expand flutter_rust_bridge_codegen
+      
+      - name: install apt packages
+        run: apt install libdbus-1-dev pkg-config
 
-      - name: Install dependencies
+      - name: Install flutter dependencies
         working-directory: ./esp_weather_app
         run: flutter pub get
 
