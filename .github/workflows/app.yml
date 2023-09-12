@@ -41,7 +41,7 @@ jobs:
         run: cargo install just cargo-expand flutter_rust_bridge_codegen
       
       - name: install apt packages
-        run: apt install libdbus-1-dev pkg-config
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends pkg-config libdbus-1-dev
 
       - name: Install flutter dependencies
         working-directory: ./esp_weather_app
