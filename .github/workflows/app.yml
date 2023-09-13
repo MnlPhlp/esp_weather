@@ -42,4 +42,10 @@ jobs:
 
       - name: build apk
         working-directory: ./esp_weather_app
-        run: export ANDROID_SDK_ROOT=/opt/android-sdk && flutter build apk --release
+        run: flutter build apk --release
+
+      - name: upload apk
+        uses: actions/upload-artifact@v3
+        with:
+          name: esp_weather.apk
+          path: esp_weather_app/build/app/outputs/flutter-apk/app-release.apk
