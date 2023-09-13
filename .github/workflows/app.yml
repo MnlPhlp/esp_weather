@@ -26,6 +26,9 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
 
+      - name: rust setup
+        run: rustup default stable
+
       - name: check toolchain
         run: flutter --version && rustup show
 
