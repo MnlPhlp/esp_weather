@@ -1,5 +1,8 @@
 name: App
 
+env:
+  RUSTUP_HOME: /root/.rustup
+
 on:
   push:
     branches: [ "main" ]
@@ -25,9 +28,6 @@ jobs:
             ./esp_weatehr_app/native/target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-
-
-      - name: rust setup
-        run: rustup default stable
 
       - name: check toolchain
         run: flutter --version && rustup show
