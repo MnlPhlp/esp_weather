@@ -9,18 +9,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container: ghcr.io/mnlphlp/flutter_rust_builder:1.3.1
 
     steps:
       - uses: actions/checkout@v3
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.13.2'
-          channel: 'stable'
-      - uses: dtolnay/rust-toolchain@v1
-        with:
-          toolchain: stable 
-          # Comma-separated list of target triples to install for this toolchain
-          targets: aarch64-linux-android, armv7-linux-androideabi,i686-linux-android, x86_64-linux-android, x86_64-unknown-linux-gnu
       
       - name: rust cache
         uses: actions/cache@v3
@@ -37,15 +29,6 @@ jobs:
       - name: check toolchain
         run: flutter --version && rustup show
 
-      - name: setup ndk
-        run: sdkmanager --install "ndk;25.2.9519653" && mkdir -p ~/.gradle && echo 'ANDROID_NDK=/opt/android-sdk-linux/ndk/25.2.9519653' >> ~/.gradle/gradle.properties
-
-      - name: install crates
-        run: cargo install just cargo-expand flutter_rust_bridge_codegen
-      
-      - name: install apt packages
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends pkg-config libdbus-1-dev
-
       - name: Install flutter dependencies
         working-directory: ./esp_weather_app
         run: flutter pub get
@@ -56,4 +39,4 @@ jobs:
 
       - name: build apk
         working-directory: ./esp_weather_app
-        run: flutter build apk --release
+        run: export ANDROID_SDK_ROOT=/opt/android-sdk && flutter build apk --release
