@@ -60,4 +60,6 @@ jobs:
       - uses: pyTooling/Actions/releaser@r0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          files: esp_weather.apk
+          files: |
+            esp_weather.apk
+            README.md
