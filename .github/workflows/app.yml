@@ -44,8 +44,13 @@ jobs:
         working-directory: ./esp_weather_app
         run: flutter build apk --release
 
-      - name: upload apk
-        uses: actions/upload-artifact@v3
+      - name: rename apk
+        run: mv esp_weather_app/build/app/outputs/flutter-apk/app-release.apk ./esp_weather.apk
+
+      # Update tag and pre-release
+      # - Update (force-push) tag to the commit that is used in the workflow.
+      # - Upload artifacts defined by the user.
+      - uses: pyTooling/Actions/releaser@r0
         with:
-          name: esp_weather.apk
-          path: esp_weather_app/build/app/outputs/flutter-apk/app-release.apk
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: esp_weather.apk
