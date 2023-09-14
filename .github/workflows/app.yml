@@ -61,14 +61,4 @@ jobs:
           name: esp_weather.apk
           # A file, directory or wildcard pattern that describes what to upload
           path: ./esp_weather.apk
-
-      # Update tag and pre-release
-      # - Update (force-push) tag to the commit that is used in the workflow.
-      # - Upload artifacts defined by the user.
-      - uses: pyTooling/Actions/releaser@r0
-        continue-on-error: true
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          files: |
-            esp_weather.apk
             README.md
