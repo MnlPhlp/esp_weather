@@ -61,4 +61,3 @@ jobs:
           name: esp_weather.apk
           # A file, directory or wildcard pattern that describes what to upload
           path: ./esp_weather.apk
-            README.md
