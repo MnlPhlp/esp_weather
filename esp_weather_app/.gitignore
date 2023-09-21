@@ -58,3 +58,6 @@ assets/
 .settings
 .project
 .classpath
+
+# compiled program
+*.apk
