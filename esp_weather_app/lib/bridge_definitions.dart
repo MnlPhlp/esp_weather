@@ -81,11 +81,15 @@ class SensorState {
   final double tempOut;
   final double humIn;
   final double humOut;
+  final int tvocPpb;
+  final int co2Ppm;
 
   const SensorState({
     required this.tempIn,
     required this.tempOut,
     required this.humIn,
     required this.humOut,
+    required this.tvocPpb,
+    required this.co2Ppm,
   });
 }

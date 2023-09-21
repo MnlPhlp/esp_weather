@@ -100,6 +100,8 @@ struct _SensorState {
     temp_out: f32,
     hum_in: f32,
     hum_out: f32,
+    tvoc_ppb: u16,
+    co2_ppm: u16,
 }
 
 #[frb(mirror(LogEntry))]

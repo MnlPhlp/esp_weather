@@ -73,7 +73,8 @@ class _MyHomePageState extends State<MyHomePage> {
   // These futures belong to the state and are only initialized once,
   // in the initState method.
   List<BleDevice> bleDevices = [];
-  SensorState sensors = SensorState(tempIn: 0, tempOut: 0, humIn: 0, humOut: 0);
+  SensorState sensors = SensorState(
+      tempIn: 0, tempOut: 0, humIn: 0, humOut: 0, tvocPpb: 0, co2Ppm: 0);
 
   @override
   void initState() {
@@ -147,6 +148,8 @@ class _MyHomePageState extends State<MyHomePage> {
               inside(sensors),
               const SizedBox(width: 20),
               outside(sensors),
+              const SizedBox(width: 20),
+              air(sensors)
             ],
           ),
           Expanded(
@@ -171,12 +174,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
 Widget inside(SensorState sensors) {
   return Text(
-    "Inside:\n    ${sensors.tempIn.round()} °C\n    ${sensors.humIn.round()} %rel.",
+    "Inside:\n    Temp: ${sensors.tempIn.round()} °C\n    Hum:  ${sensors.humIn.round()} %rel.",
   );
 }
 
 Widget outside(SensorState sensors) {
   return Text(
-    "Outside:\n    ${sensors.tempOut.round()} °C\n    ${sensors.humOut.round()} %rel.",
+    "Outside:\n    Temp: ${sensors.tempOut.round()} °C\n    Hum:  ${sensors.humOut.round()} %rel.",
+  );
+}
+
+Widget air(SensorState sensors) {
+  return Text(
+    "Air:\n    TVOC: ${sensors.tvocPpb} ppb\n    CO2:  ${sensors.co2Ppm} ppm",
   );
 }

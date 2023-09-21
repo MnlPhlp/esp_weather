@@ -20,7 +20,7 @@ struct Delays {
 static DELAYS: Delays = Delays {
     blink_led: Duration::from_millis(500),
     sample_sensors: Duration::from_secs(1),
-    display: Duration::from_secs(4),
+    display: Duration::from_secs(2),
 };
 
 /// delay the task for given duration.
@@ -48,8 +48,7 @@ pub(crate) fn setup() -> Result<()> {
 
     executor.spawn_detached(read_sensors::run(
         DELAYS.sample_sensors,
-        hw.dht11_pin,
-        hw.dht22_pin,
+        hw.outside_pin,
         hw.i2c,
     ))?;
 

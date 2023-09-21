@@ -199,14 +199,20 @@ class NativeImpl implements Native {
 
   SensorState _wire2api_sensor_state(dynamic raw) {
     final arr = raw as List<dynamic>;
-    if (arr.length != 4)
-      throw Exception('unexpected arr length: expect 4 but see ${arr.length}');
+    if (arr.length != 6)
+      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
     return SensorState(
       tempIn: _wire2api_f32(arr[0]),
       tempOut: _wire2api_f32(arr[1]),
       humIn: _wire2api_f32(arr[2]),
       humOut: _wire2api_f32(arr[3]),
+      tvocPpb: _wire2api_u16(arr[4]),
+      co2Ppm: _wire2api_u16(arr[5]),
     );
+  }
+
+  int _wire2api_u16(dynamic raw) {
+    return raw as int;
   }
 
   int _wire2api_u8(dynamic raw) {

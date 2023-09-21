@@ -33,6 +33,8 @@ pub struct SensorState {
     pub temp_out: f32,
     pub hum_in: f32,
     pub hum_out: f32,
+    pub tvoc_ppb: u16,
+    pub co2_ppm: u16,
 }
 
 const CONFIG: Configuration = config::standard();

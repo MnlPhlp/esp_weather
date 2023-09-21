@@ -142,6 +142,8 @@ const _: fn() = || {
         let _: f32 = SensorState.temp_out;
         let _: f32 = SensorState.hum_in;
         let _: f32 = SensorState.hum_out;
+        let _: u16 = SensorState.tvoc_ppb;
+        let _: u16 = SensorState.co2_ppm;
     }
 };
 // Section: allocate functions
@@ -249,6 +251,8 @@ impl support::IntoDart for mirror_SensorState {
             self.0.temp_out.into_into_dart().into_dart(),
             self.0.hum_in.into_into_dart().into_dart(),
             self.0.hum_out.into_into_dart().into_dart(),
+            self.0.tvoc_ppb.into_into_dart().into_dart(),
+            self.0.co2_ppm.into_into_dart().into_dart(),
         ]
         .into_dart()
     }

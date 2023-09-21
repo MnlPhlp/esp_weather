@@ -15,7 +15,7 @@ use super::i2c::I2cDriver;
 
 #[derive(Clone)]
 pub struct Display {
-    disp: Arc<Mutex<GraphicsMode<I2cInterface<I2cDriver>>>>,
+    disp: Arc<Mutex<GraphicsMode<I2cInterface<&'static I2cDriver>>>>,
     bounding_box_value: primitives::Rectangle,
 }
 impl Display {
@@ -29,7 +29,7 @@ impl Display {
         self.disp.lock().unwrap().init()
     }
 
-    pub fn new(disp: GraphicsMode<I2cInterface<I2cDriver>>) -> Self {
+    pub fn new(disp: GraphicsMode<I2cInterface<&'static I2cDriver>>) -> Self {
         Self {
             bounding_box_value: disp.bounding_box(),
             disp: Arc::new(Mutex::new(disp)),
