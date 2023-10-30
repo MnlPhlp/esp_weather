@@ -15,7 +15,7 @@ use log::info;
 use log::LevelFilter;
 use tokio::sync::mpsc;
 
-pub use blec::BleDevice;
+pub use blec::{BleAddress, BleDevice};
 pub use flutter_logger::LogEntry;
 use log::error;
 pub use log::Level;
@@ -34,9 +34,9 @@ pub fn ble_discover(sink: StreamSink<Vec<BleDevice>>, timeout: u64) {
     }
 }
 
-pub fn ble_connect(id: String) {
+pub fn ble_connect(address: BleAddress) {
     block_on(blec::connect(
-        id,
+        address,
         SERVICE_UUID,
         vec![STATE_UUID],
         Some(|| {}),
@@ -89,7 +89,7 @@ pub fn create_log_stream(s: StreamSink<LogEntry>) {
 
 #[frb(mirror(BleDevice))]
 struct _BleDevice {
-    address: String,
+    address: BleAddress,
     name: String,
     is_connected: bool,
 }
@@ -119,4 +119,9 @@ enum _Level {
     Info,
     Debug,
     Trace,
+}
+
+#[frb(mirror(BleAddress))]
+struct _BleAddress {
+    address: [u8; 6],
 }

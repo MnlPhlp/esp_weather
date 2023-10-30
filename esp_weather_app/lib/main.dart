@@ -157,7 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
               itemCount: bleDevices.length,
               itemBuilder: (ctx, idx) => TextButton(
                   onPressed: () async {
-                    await api.bleConnect(id: bleDevices[idx].address);
+                    await api.bleConnect(address: bleDevices[idx].address);
                     setState(() {
                       bleDevices = [];
                     });
